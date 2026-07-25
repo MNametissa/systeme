@@ -1,0 +1,36 @@
+# Journal des décisions
+
+Une décision par entrée. Une décision renversée n'est **jamais supprimée** : son
+statut passe à `renversée par D-xxx`, sinon l'approche rejetée sera re-proposée.
+Statuts : `active` · `à éprouver` (active mais conditionnée à l'essai témoin) ·
+`renversée par D-xxx` · `caduque` (le contexte a disparu).
+
+| ID | Date | Décision | Motif | Statut | Condition de renversement |
+|---|---|---|---|---|---|
+| D-001 | 2026-07 | Abandon des skills maison (cmar-bootstrap, spec-forge, spec-audit) et du vocabulaire doctrine CMAR | Inefficacité constatée sur le terrain (stocktake) ; un langage privé produit de la conformité de surface | active | — |
+| D-002 | 2026-07 | Hiérarchie de force des contraintes : script qui échoue > format contraint > fichier relu au démarrage > instruction/skill | Une instruction se dilue et se contourne ; un script non | active | Un cas documenté où l'instruction tient et le script nuit |
+| D-003 | 2026-07 | Distinguer travail de population (la justesse = la couverture) et travail de jugement (contestable, pas vérifiable) ; formuler en comptable dès que possible | « Comprends le module » produit un récit invérifiable ; « énumère les occurrences » produit un décompte | active | — |
+| D-004 | 2026-07 | La preuve vient de l'instrument, jamais du modèle. Un tableau « Lu / Non lu » écrit par le modèle est un récit | Le texte d'une lecture réelle et d'une lecture imaginée est identique | active | — |
+| D-005 | 2026-07 | Ne stocker que l'indérivable (décisions, conventions, pièges vécus). Le dérivable se régénère par instrument | Deux vérités divergent en silence — prouvé : AUDIT.md stocktake déclare « pas de monétaire » alors que le code porte 14 champs Monetary | active | — |
+| D-006 | 2026-07 | Pipeline pour l'orchestration du travail de population ; jugement du modèle à l'intérieur des étapes ; jamais l'inverse | L'agent triche sur l'orchestration (saute la reconnaissance, teste trop tôt) ; « pas sur le jugement unitaire » est une affirmation, pas un constat — requalifiée le 2026-07-25 | à éprouver | Échantillon D-020 de l'essai témoin : si la session triche aussi sur le jugement unitaire (classement hors-périmètre de complaisance), le motif tombe |
+| D-007 | 2026-07 | Adopter Superpowers comme posture de travail (plan, TDD, cause racine) à la place des skills maison | Langage plat, maintenu par d'autres, calibré large ; recouvre cmar-bootstrap | à éprouver | Essai témoin (06) : qualité de sortie inchangée |
+| D-008 | 2026-07 | Adopter la forme spec-kit (spec → plan → tâches, artefacts consommés par la phase suivante) pour les specs | Format contraint = barreau 2 de D-002 ; remplace spec-forge | à éprouver | Rigidité constatée sur 2 tranches réelles |
+| D-009 | 2026-07 | muk_mcp comme instrument d'introspection Odoo (registre chargé, pas le code source) ; instruments bao_* via @mcp_tool | Sur Odoo, le registre résolu (héritages, surcharges) est la seule source exhaustive | à éprouver | Incompatibilité de version avec l'instance BAO, ou refus d'un addon tiers dans le registre |
+| D-010 | 2026-07 | MCP externes limités à : context7, PostgreSQL, muk_mcp (+ figma-mcp pour Néo). Pas d'accumulation | Chaque serveur consomme du contexte et élargit la surface de confiance | active | Un besoin nommé qu'aucun des quatre ne couvre |
+| D-011 | 2026-07 | L'audit adverse est une porte de sortie de tranche, pas un événement de fin de projet. Trois conditions : session neuve qui n'a pas écrit le code ; faille = scénario exécutable ; un manque sans scénario ne compte pas | Seul dispositif de stocktake ayant attrapé la classe « théâtre » (11 failles prouvées) — mais lancé une fois, tard | active | — |
+| D-012 | 2026-07 | Jamais de surface (écran, vue) sans son moteur dans la même tranche | Hypothèse : le théâtre de stocktake vient de tranches écran-d'abord (console tôt, moteurs corrigés tard) | à éprouver | Marcel infirme le déroulé des sessions concernées |
+| D-013 | 2026-07 | Toute porte est câblée (hook Claude Code + CI). Une porte volontaire est une instruction déguisée | Les 7 portes de stocktake existaient, non câblées, et n'ont pas empêché le théâtre | active | — |
+| D-014 | 2026-07 | Discipline unique pour tous les artefacts (code, document, spec, traduction) : fermer la population de faits → générer → exécution adverse contre l'intention. Seuls les instruments changent par type | Le seuil configurable-inopérant et le guide creux sont le même défaut : la forme sans la substance | active | — |
+| D-015 | 2026-07 | Tout skill maison futur : une page max, français courant, se termine par une commande. Au-delà d'une page = doctrine = on coupe | Cause d'échec identifiée des skills précédents | active | — |
+| D-016 | 2026-07 | Un document se rédige depuis une base de faits extraite du réel, avec lecteur et tâche nommés ; il est accepté si un contexte neuf l'exécute sans rien deviner | Sans lecteur ni tâche, aucun critère d'échec n'existe, donc aucun moyen d'être bon | active | — |
+| D-017 | 2026-07 | Les portes universelles de stocktake (no-placeholders, red-first, layer-direction) ne sont réécrites que si Superpowers + hooks ne couvrent pas le besoin ; les portes couplées à CMAD (registry-complete, flag-charter-sync) meurent | Échelle de réutilisation appliquée à nos propres outils | à éprouver | Constat de non-couverture pendant l'essai témoin |
+| D-018 | 2026-07-25 | Essai témoin à deux tranches (A population, B anti-théâtre avec surface) ; baseline chiffrée extraite par script de l'historique stocktake AVANT lancement | Une seule tranche de type A est gagnée d'avance et ne teste pas la classe théâtre ; sans baseline en nombres, le verdict est un récit (D-004 au niveau méta) | active | — |
+| D-019 | 2026-07-25 | La détection des décisions non journalisées est mécanique (decision_gate.sh : diff structurant sans DECISIONS.md modifié → blocage), jamais par question posée à la session | Demander au processus qui affabule de se certifier est l'anti-pattern fondateur ; limites assumées : décision orale ou déjà commitée invisible, CI en dernier verrou | active | Un cas documenté où la porte mécanique bloque à tort plus qu'elle ne protège |
+| D-020 | 2026-07-25 | Delta nul = couverture prouvée, jamais travail fini ; le jugement de population est audité par échantillon re-jugé en session neuve, un désaccord → re-jugement complet | Les « 24 Float légitimes » de stocktake sont un jugement de modèle non audité ; un seul élément mal classé rend le delta nul menteur | active | — |
+
+## Rituel d'ajustement
+
+À la fin de chaque tranche : relire les entrées `à éprouver` touchées par la
+tranche, trancher (→ `active` ou `renversée`), dater. Toute nouvelle décision
+structurante prise en session **doit** atterrir ici avant la fin de la session —
+c'est le seul état qui survit.
