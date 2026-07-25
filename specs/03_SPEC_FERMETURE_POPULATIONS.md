@@ -28,14 +28,15 @@ Les tests viennent **après** le delta nul, jamais comme détecteur de résidus.
 éléments classés hors périmètre est re-jugé en session neuve (protocole 05) ;
 un seul désaccord → re-jugement complet de la population.
 
-## Preuve que ça paie (instance exécutée, 2026-07-25)
+## Preuve que ça paie — et que le jugement seul ment (2026-07-25)
 
 Sur stocktake, prédicat « champs Float hors tests » : **26 éléments** par AST.
-Jugement : 24 légitimes (quantités UoM, pourcentages, géo, scores) ; le
-refactor monétaire post-audit avait déjà produit 14 Monetary corrects ; **un
-résidu** : `inventory.validation.level.threshold_value` (validation.py:32),
-seuil de valeur resté Float — invisible au récit, visible au décompte.
-Instrument livré : `instruments/close_float_population.py`.
+Premier jugement (session fondatrice) : 24 légitimes, un résidu
+(`threshold_value`). Re-jugement sur pièces à la tranche A de l'essai (D-021) :
+**deux résidus** — `zone.heat_value`, somme de Monetary servie comme écart
+valorisé, était mal classé « légitime ». Double leçon : le décompte a vu ce que
+le récit ne voyait pas, ET le premier jugement non audité s'est trompé — c'est
+D-020 en acte. Instrument livré : `instruments/close_float_population.py`.
 
 ## Anti-règles
 
