@@ -54,3 +54,11 @@ feature) AVANT de lancer. Sans nombres, le verdict serait un récit (D-004).
 - Mesures équivalentes → le problème n'était pas (que) les skills ; on
   suspend la construction et on cherche la variable réelle avant de dépenser.
 - Chaque issue s'écrit au journal, datée.
+
+## Commande
+
+```bash
+# La baseline en nombres, régénérée depuis l'historique (D-005 : pas stockée).
+# Au 2026-07-25 : 97 commits, 14 reprises (14 %), 5 théâtre, remarques #5-7.
+bash instruments/baseline_reprises.sh <chemin-du-depot-stocktake>
+```
