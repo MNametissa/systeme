@@ -25,8 +25,8 @@ dix.
 bash bootstrap.sh mon-projet    # ou `bash bootstrap.sh .` dans un dossier existant
 ```
 
-Puis en session Claude Code : `/speckit.specify` → reconnaissance par
-instruments → `/speckit.plan` (décisions au journal) → `/speckit.tasks` →
+Puis en session Claude Code : `/speckit-specify` → reconnaissance par
+instruments → `/speckit-plan` (décisions au journal) → `/speckit-tasks` →
 tranches (voir `specs/01_SPEC_SYSTEME.md`).
 
 ## État (2026-07-25)

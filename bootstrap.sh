@@ -49,7 +49,7 @@ if [ ! -f PLAN.md ]; then
 Les cases sont l'état réel du travail : la session suivante reprend ici.
 Une tranche = moteur avant surface, finit sur la porte.
 
-- [ ] (aucune tranche définie — passer par /speckit.tasks)
+- [ ] (aucune tranche définie — passer par /speckit-tasks)
 EOF
 fi
 
@@ -78,7 +78,7 @@ git commit -qm "bootstrap: socle système (journal, porte, hooks, specs)" || tru
 
 echo "OK : $(pwd)"
 echo "Suivant, en session Claude Code :"
-echo "  1. /speckit.specify   — le quoi/pourquoi, invariants en français courant"
+echo "  1. /speckit-specify   — le quoi/pourquoi, invariants en français courant"
 echo "  2. reconnaissance par instruments AVANT le plan (échelle de réutilisation)"
-echo "  3. /speckit.plan      — chaque choix structurant => une ligne de DECISIONS.md"
-echo "  4. /speckit.tasks     — tranches moteur-avant-surface"
+echo "  3. /speckit-plan      — chaque choix structurant => une ligne de DECISIONS.md"
+echo "  4. /speckit-tasks     — tranches moteur-avant-surface"
