@@ -11,7 +11,7 @@ dix.
 
 | Chemin | Rôle |
 |---|---|
-| `DECISIONS.md` | journal des décisions du système lui-même (22 entrées, statuts vivants) |
+| `DECISIONS.md` | journal des décisions du système lui-même (23 entrées, statuts vivants) |
 | `bootstrap.sh` | démarre un projet : git, spec-kit, journal, porte, hooks, CLAUDE.md |
 | `templates/CLAUDE.project.md` | posture permanente copiée dans chaque projet |
 | `specs/` | les specs du système (01 vue d'ensemble → 06 essai témoin) |
