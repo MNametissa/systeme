@@ -24,7 +24,7 @@ Le coût d'une session d'audit est inférieur au coût d'une remarque client
 
 | Artefact | Attaque |
 |---|---|
-| Code | scénarios métier contre la spec, dont : chaque option/seuil configurable est-il **effectif** (changer la valeur change le comportement, prouvé) — l'anti-théâtre |
+| Code | scénarios métier contre la spec, dont : chaque option/seuil configurable est-il **effectif** (changer la valeur change le comportement, prouvé) — l'anti-théâtre ; et toute garde est-elle **inforgeable par l'appelant** (contexte, argument, en-tête fournis par le client) — angle manqué par l'audit du 2026-07-26, D-027 |
 | Document | exécution à froid : suivre le document sans rien deviner ; premier blocage = faille, avec l'étape citée |
 | Spec | double implémentation mentale : deux lectures indépendantes ; toute divergence = ambiguïté prouvée, avec les deux lectures |
 | Traduction / répétitif | delta de population : liste initiale moins liste traitée, par instrument |
