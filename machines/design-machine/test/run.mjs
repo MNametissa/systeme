@@ -372,7 +372,8 @@ test('le MASTER rend la motion etendue et avoue le non-instrumente', () => {
 
 // --- comparaison de densite ---
 
-const { deriveIntensity, compareIntensity, formatCompare } = await import('../src/compare.mjs');
+const compareMod = await import('../src/compare.mjs');
+const { deriveIntensity, compareIntensity, formatCompare } = compareMod;
 
 const rawBonito = {
   visible: 500, animated: 60, infiniteLoops: 8, rotated: 25,
@@ -412,6 +413,14 @@ test('formatCompare nomme les ecarts et garde le juge humain', () => {
   const out = formatCompare(compareIntensity(rawBonito, rawPlat));
   assert.ok(out.includes('ECART'));
   assert.ok(out.includes('North Star'));
+});
+
+test('formatDensity jauge une page seule (chasse aux references)', () => {
+  const { formatDensity } = compareMod;
+  const out = formatDensity(rawBonito, 'https://candidat.test');
+  assert.ok(out.includes('DENSITE MESUREE'));
+  assert.ok(out.includes('candidat.test'));
+  assert.ok(out.includes('12.0 %'));
 });
 
 

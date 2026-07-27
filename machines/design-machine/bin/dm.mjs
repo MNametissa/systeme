@@ -46,6 +46,10 @@ design-machine — extraire, composer, verifier
       ombres dures + blocs decales, chevauchements, saut typographique.
       Rendu sous la moitie de la source sur une metrique = ECART, sortie 1.
 
+  dm density <url> [--json]
+      La meme densite, pour une seule page — qualifier un candidat pendant la
+      chasse aux references (voir CHASSE.md).
+
   dm gate [<url>] [--json] [--warn-only] [--no-impeccable]
       Porte unifiee : dm verify + impeccable detect, un seul verdict.
       Une etape absente (outil non installe) est ignoree ; une panne ferme.
@@ -68,6 +72,7 @@ async function main() {
       headed: !!flag('headed', false),
       motion: !!flag('motion', false),
       screenshot: typeof flag('screenshot') === 'string' ? flag('screenshot') : undefined,
+      fullPage: !!flag('full-page', false),
       waitFor: typeof flag('wait-for') === 'string' ? flag('wait-for') : undefined,
       width: Number(flag('width', 1440))
     });
@@ -167,6 +172,21 @@ async function main() {
       console.log(formatCompare(rows, [srcUrl, renduUrl]));
     }
     return rows.some(r => r.ecart) && !flag('warn-only', false) ? 1 : 0;
+  }
+
+  if (cmd === 'density') {
+    const url = positional[0];
+    if (!url) { console.error(USAGE); return 2; }
+    const { capture } = await import('../src/extract.mjs');
+    const { deriveIntensity, formatDensity } = await import('../src/compare.mjs');
+    console.error(`  ouverture ${url}`);
+    const p = await capture(url, {
+      intensity: true,
+      screenshot: typeof flag('screenshot') === 'string' ? flag('screenshot') : undefined,
+      fullPage: !!flag('full-page', false)
+    });
+    console.log(flag('json', false) ? JSON.stringify(deriveIntensity(p.intensity), null, 2) : formatDensity(p.intensity, url));
+    return 0;
   }
 
   if (cmd === 'verify') {

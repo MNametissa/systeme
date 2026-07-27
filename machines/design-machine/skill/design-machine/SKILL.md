@@ -33,6 +33,9 @@ Ne proposer aucune direction visuelle. Obtenir du demandeur, une question à la 
    onomatopées surgissantes, contraste calme/burst…) et les faire valider
    AVANT d'implémenter. La chorégraphie est ensuite libre : seul le choix des
    valeurs reste contraint par les tokens.
+   Pas de référence sous la main → CHASSER : protocole complet dans
+   `~/development/systeme/machines/design-machine/CHASSE.md` (réflexion →
+   WebSearch → `dm density` par candidat → le demandeur choisit sur pièces).
 4. **L'affectation couche → source** : typography, palette, spatial, motion,
    surfaceStyle — chaque couche vient d'UNE source. Les composants ne se
    composent pas (intersection de couches, refusé par `dm merge`).

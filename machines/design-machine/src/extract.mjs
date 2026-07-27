@@ -121,7 +121,7 @@ export async function capture(url, opts = {}) {
     }
 
     if (opts.screenshot) {
-      await page.screenshot({ path: opts.screenshot, fullPage: false });
+      await page.screenshot({ path: opts.screenshot, fullPage: !!opts.fullPage });
       payload.screenshot = opts.screenshot;
     }
     return payload;

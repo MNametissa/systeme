@@ -45,6 +45,15 @@ export function compareIntensity(rawSource, rawRendu) {
   }));
 }
 
+export function formatDensity(raw, label = '') {
+  const d = deriveIntensity(raw);
+  const l = [];
+  l.push(`DENSITE MESUREE${label ? ` — ${label}` : ''}`);
+  l.push('');
+  for (const m of METRICS) l.push(`  ${m.label.padEnd(34)} ${m.fmt(d[m.key])}`);
+  return l.join('\n');
+}
+
 export function formatCompare(rows, [labelA, labelB] = ['source', 'rendu']) {
   const l = [];
   const ecarts = rows.filter(r => r.ecart);
