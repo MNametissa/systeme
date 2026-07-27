@@ -10,7 +10,7 @@ n'importe quel ordre (Design → Rédaction (specs) → Coding → Rédaction (g
 
 | Machine | Entrée | Sortie | État |
 |---|---|---|---|
-| **Design** | intention + contraintes + sites de référence | forme (MASTER, tokens, écrans) | livrée, 13 défauts |
+| **Design** | intention + contraintes + sites de référence | forme (MASTER, tokens, écrans) | **opérationnelle** — T5 fait, installée (dm au PATH, skill mecid), 5 défauts restants |
 | **Rédaction** | base de faits | document (spec, PTF, guide) | livrée, 12 défauts |
 | **Coding** | intention ou spec | code qui tourne | pas encore reçue |
 
@@ -172,35 +172,35 @@ liste d'IDs non déductibles, pas un avis.
 
 ---
 
-## T5 — Les trois correctifs durs de design-machine
+## T5 — Les trois correctifs durs de design-machine — **FAIT (2026-07-27)**
 
-Détail complet et scénarios dans `DEFAUTS_design-machine.md`.
+Détail complet et scénarios dans `DEFAUTS_design-machine.md`. Code dans
+`machines/design-machine/` (copie canonique, D-029).
 
-- [ ] **D1** — `spaceUnit` : pondérer par la taille de l'unité (score = hits × u)
-      ou voter sur les paliers. Aujourd'hui la maille répond « 2px » dès qu'une
-      valeur impaire traîne, avec `coverage 1.00`. Ajouter ce mode d'échec aux
-      limites du README.
-- [ ] **D2** — parseur d'arguments qui distingue drapeau booléen et drapeau à
-      valeur. Aujourd'hui `dm gate --json <url>` vérifie **localhost:3000** et
-      rend CONFORME sur la mauvaise cible.
-- [ ] **D3** — séparer `skip` (outil absent → porte ouverte, c'est voulu) de
-      `error` (tokens.json corrompu, capture qui lève, timeout → porte **fermée**).
-      Aujourd'hui toute panne ouvre la porte.
-- [ ] Un test par correctif, sur le modèle existant
+- [x] **D1** — `spaceUnit` : la maille est la plus grande unité couvrant ≥ 0.8,
+      repli sur meilleur score avec couverture avouée. Le correctif « hits × u »
+      envisagé ici était faux (élisait 16 sur une maille 8 — prouvé par fixture).
+      Mode d'échec documenté aux limites du README.
+- [x] **D2** — parseur `src/args.mjs`, booléens vs valeurs. Rejoué :
+      `dm gate --json <url>` vérifie l'url passée.
+- [x] **D3** — `error` distinct de `skip` : une panne ferme la porte (D-030).
+      Rejoué sur tokens.json corrompu : PORTE FERMÉE, code 1.
+- [x] 6 tests ajoutés (32 verts). En prime : D7 (sandbox actif par défaut),
+      D8/D11 (un seul chemin d'installation, bon profil), D12 (compte de tests),
+      D5 (hook en `Stop`).
 
-**Critère d'acceptation** : les trois scénarios de `DEFAUTS_design-machine.md`
-rejoués donnent le comportement inverse ; `npm test` reste vert.
+**Critère d'acceptation atteint** : scénarios rejoués en réel avec comportement
+inverse ; chaîne complète extract → merge → design-md → verify → gate verte sur
+fixture locale, bac à sable actif.
 
 ---
 
 ## T6 — Câblage et périmètres (à trancher, pas à coder)
 
-- [ ] **D5** — déplacer la porte design de `PostToolUse` (Chromium à chaque
-      écriture de fichier) vers `Stop` ou pre-commit
+- [x] **D5** — porte design câblée en `Stop` (snippet + hook mis à jour, D-030)
 - [ ] **D4** — décider si le contraste entre dans `dm gate` ou reste chez
       AccessLint. En l'état, la porte bénit un contrat illisible.
-- [ ] **D7** — `--no-sandbox` alors que le cas d'usage est d'ouvrir des sites
-      tiers : à retirer ou à justifier explicitement
+- [x] **D7** — `--no-sandbox` retiré ; `DM_NO_SANDBOX=1` réservé aux conteneurs
 - [ ] **spec-kit** : périmètre arrêté — cahier de conception et spécification
       uniquement (là où il a fait ses preuves, tranche B). Pas sur PTF, devis,
       guide, rapport : forme logicielle inadaptée. Il s'installe par projet, donc

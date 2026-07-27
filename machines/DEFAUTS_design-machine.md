@@ -3,25 +3,29 @@
 Source : `~/Documents/Personnels/design-machine.zip`, 21 fichiers, 26 tests verts.
 Chaque entrée « prouvé » a été exécutée, pas déduite.
 
+**Corrigés le 2026-07-27** (session d'exhumation) : D1, D2, D3, D5, D7, D8, D11,
+D12 — code dans `machines/design-machine/`, 32 tests verts, scénarios rejoués
+avec comportement inverse. Restent ouverts : D4, D6, D9, D10, D13.
+
 ## Bloquants — la machine ment sans le dire
 
-- [ ] **D1. Maille d'espacement dégénérée** *(prouvé)* — `spaceUnit` vote sur
-      `[2,4,5,6,8,10,12,16]` ; tout multiple de 8 étant multiple de 2 et 4, les
-      petites unités gagnent mécaniquement. Maille 8 pure → `unit 8` ; la même
-      + `10px`/`14px` → `unit 2, coverage 1.00`. La couverture est MAXIMALE quand
-      la réponse est vide de sens. Correctif : pondérer par la taille de l'unité
-      (score = hits × u) ou voter sur les paliers, pas sur les valeurs brutes.
-      Et ajouter ce mode d'échec aux limites du README.
-- [ ] **D2. `dm gate --json <url>` vérifie la mauvaise page** *(prouvé)* — le
-      parseur exclut tout positionnel précédé d'un flag : `["gate","--json",url]`
-      → `positional = []` → retombe sur `localhost:3000` et rend CONFORME sur une
-      autre cible. Correctif : parseur d'arguments qui distingue drapeaux
-      booléens et drapeaux à valeur (`indexOf` casse aussi sur valeurs répétées).
-- [ ] **D3. La porte ne peut jamais échouer fermée** — dans `bin/dm.mjs`, toute
-      erreur devient `skip` : tokens.json corrompu, `capture()` qui lève, page en
-      erreur, timeout → PORTE OUVERTE. « Une étape absente ne ferme pas la porte »
-      vaut pour un outil absent, pas pour une panne. Séparer `skip` (outil absent)
-      de `error` (panne) — l'erreur doit fermer.
+- [x] **D1. Maille d'espacement dégénérée** *(prouvé — corrigé)* — `spaceUnit`
+      votait sur les hits bruts ; les petites unités gagnaient mécaniquement.
+      Maille 8 + `10px` → `unit 2, coverage 1.00`. Corrigé : la maille est la
+      PLUS GRANDE unité couvrant ≥ 0.8 des valeurs, repli sur le meilleur score
+      avec couverture avouée. **Le correctif suggéré ici (score = hits × u)
+      était lui-même faux** : sur `[8,16,24,48,96]`, 3 hits × 16 = 48 > 5 × 8 =
+      40 — il élisait une maille 16 avec couverture 0.6 (prouvé par la fixture
+      siteA). Mode d'échec documenté aux limites du README.
+- [x] **D2. `dm gate --json <url>` vérifie la mauvaise page** *(prouvé — corrigé)*
+      — le parseur excluait tout positionnel précédé d'un flag et retombait sur
+      `localhost:3000`. Corrigé : `src/args.mjs`, drapeaux booléens distingués
+      des drapeaux à valeur, sans `indexOf`. Rejoué en réel : `gate --json <url>`
+      vérifie l'url passée.
+- [x] **D3. La porte ne peut jamais échouer fermée** *(corrigé)* — toute erreur
+      devenait `skip` → porte ouverte. Corrigé : statut `error` distinct, une
+      panne ferme (`PORTE FERMÉE`, code 1, marque `PANNE`), seul l'outil absent
+      reste un `skip`. Rejoué en réel sur tokens.json corrompu. → D-030.
 
 ## Conception
 
@@ -29,31 +33,34 @@ Chaque entrée « prouvé » a été exécutée, pas déduite.
       la conformité au contrat, jamais que le contrat est utilisable. Extraire
       d'un site à faible contraste fait hériter du défaut, et la porte le bénit.
       AccessLint est hors `dm gate`.
-- [ ] **D5. Câblage du hook intenable** — `PostToolUse` sur `Edit|Write|MultiEdit`
-      lance Chromium à chaque écriture de fichier (chargement + déroulé complet +
-      styles calculés). Le README dit « une porte insupportable finit désactivée »
-      et livre ce câblage. Déplacer en `Stop` ou pre-commit.
+- [x] **D5. Câblage du hook intenable** *(corrigé)* — snippet déplacé de
+      `PostToolUse` vers `Stop` ; commentaire du hook aligné. → D-030.
 - [ ] **D6. Le MASTER ne contraint rien au niveau composant** — section Components
       vide (refus assumé, honnête). Un écran peut être 100 % conforme et laid.
-- [ ] **D7. `--no-sandbox` sur des URL tierces** — `extract.mjs` désactive le bac
-      à sable alors que le cas d'usage central est d'ouvrir des sites arbitraires.
+- [x] **D7. `--no-sandbox` sur des URL tierces** *(corrigé)* — bac à sable actif
+      par défaut, `DM_NO_SANDBOX=1` réservé aux conteneurs. Extraction vérifiée
+      sandbox actif sur cette machine.
 
 ## Installation
 
-- [ ] **D8. Trois chemins d'installation contradictoires** — README `npm link` ·
-      snippet de hook `$CLAUDE_PROJECT_DIR/node_modules/design-machine/...` ·
-      hook `npx --no-install dm`. Au moins deux échouent.
+- [x] **D8. Trois chemins d'installation contradictoires** *(corrigé)* — un seul
+      chemin : wrapper `~/.local/bin/dm` vers la copie canonique du dépôt
+      (`machines/design-machine/`), hook par défaut `dm` du PATH (surcharge
+      `DM_BIN`), README aligné. → D-029.
 - [ ] **D9. `install-stack.sh` n'installe que l'étape 1** — les sections 2 à 5
       (Impeccable, AccessLint, Vercel, audit) n'appellent que `step` = `printf`.
       Même avec `--apply`, rien ne s'exécute. Le nom promet plus que le fichier.
 - [ ] **D10. `run()` avale les échecs** (`|| return 0`) — un `npm test` rouge
       n'interrompt pas l'installation : la machine s'installe cassée en silence.
-- [ ] **D11. Skill copié dans le mauvais profil** — `SKILLS_DIR` par défaut
-      `~/.claude/skills`, alors que les sessions tournent sur `~/.claude-mecid/skills`.
+- [x] **D11. Skill copié dans le mauvais profil** *(corrigé)* — `SKILLS_DIR` par
+      défaut `~/.claude-mecid/skills` ; skill réécrit (intake des entrées :
+      intention, sites de référence, affectation couche→source, contraintes) et
+      installé — chargé par la session dès l'installation, vérifié.
 
 ## Documentation
 
-- [ ] **D12. README annonce 17 tests, il y en a 26** *(prouvé)*.
+- [x] **D12. README annonce 17 tests** *(prouvé — corrigé)* : 32 réels après
+      les 6 tests des correctifs, README aligné.
 - [ ] **D13. Dépendances externes non vérifiées** — `impeccable ignores add-value`
       (sous-commande supposée) ; AccessLint (STACK.md admet que les noms ont bougé) ;
       flag Vercel `--skill` (documenté ailleurs, pas sur ce dépôt).

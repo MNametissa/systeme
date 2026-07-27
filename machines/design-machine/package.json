@@ -1,0 +1,19 @@
+{
+  "name": "design-machine",
+  "version": "0.1.0",
+  "description": "Extraction de tokens de design depuis des sites existants, composition par couches orthogonales, verification de conformite.",
+  "type": "module",
+  "bin": {
+    "dm": "./bin/dm.mjs"
+  },
+  "scripts": {
+    "test": "node test/run.mjs"
+  },
+  "dependencies": {
+    "puppeteer-core": "^24.0.0"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "license": "MIT"
+}

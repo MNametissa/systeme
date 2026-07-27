@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$HOME/development/systeme/machines/design-machine/hooks/design-gate.sh"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "note": "Exemple d'affectation. Une couche = une source. Trois sources maximum.",
+  "sources": [
+    { "label": "A", "url": "https://exemple-editorial.com", "role": "typographie et surface" },
+    { "label": "B", "url": "https://exemple-produit.com", "role": "palette et spatial" },
+    { "label": "C", "url": "https://exemple-motion.com", "role": "motion" }
+  ],
+  "map": "typography=A,palette=B,spatial=B,motion=C,surfaceStyle=A"
+}
