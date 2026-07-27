@@ -24,11 +24,19 @@ Ne proposer aucune direction visuelle. Obtenir du demandeur, une question à la 
 
 1. **L'intention** (Creative North Star) — une phrase, écrite par lui.
    Aucune extraction ne produit une intention.
-2. **Deux ou trois sites de référence** (URL), ceux dont le rendu lui plaît.
-3. **L'affectation couche → source** : typography, palette, spatial, motion,
+2. **Deux ou trois sites de référence de STYLE** (URL), ceux dont le rendu lui plaît.
+3. **La référence d'INTENSITÉ, séparément** — le style et l'énergie viennent
+   rarement du même endroit. Demander : « quelle énergie, et d'où vient-elle ? »
+   Un site → l'extraire aussi, c'est lui que `dm compare` prendra pour cible.
+   Un médium non-web (manga, jeu de combat, film) → transposer en EFFETS NOMMÉS
+   observables (frappes brèves à overshoot, impact frames, secousses,
+   onomatopées surgissantes, contraste calme/burst…) et les faire valider
+   AVANT d'implémenter. La chorégraphie est ensuite libre : seul le choix des
+   valeurs reste contraint par les tokens.
+4. **L'affectation couche → source** : typography, palette, spatial, motion,
    surfaceStyle — chaque couche vient d'UNE source. Les composants ne se
    composent pas (intersection de couches, refusé par `dm merge`).
-4. **Les contraintes** : viewport(s) visé(s), mode sombre ou non, polices
+5. **Les contraintes** : viewport(s) visé(s), mode sombre ou non, polices
    imposées ou sous licence, nature du livrable (app, landing, dashboard).
 
 Puis dérouler, sans réinventer :
@@ -46,13 +54,16 @@ MASTER — le documenter à la main, jamais l'estimer.
 ## Avant de livrer, et après toute modification d'UI
 
 ```
-dm gate <url du rendu>                   # conformité au contrat ; sortie 1 = porte fermée
-dm compare <url source> <url du rendu>   # densité mesurée (animations, profondeur, collage)
+dm gate <url du rendu>                        # conformité au contrat ; sortie 1 = porte fermée
+dm compare <ref intensité> <url du rendu>     # densité mesurée (animations, profondeur, collage)
 ```
 
-`gate` vérifie le vocabulaire ; `compare` vérifie que le rendu porte la même
-densité que la source (un rendu plat peut être conforme). Un ÉCART se corrige
-en composition, pas en désactivant l'instrument.
+`gate` vérifie le vocabulaire ; `compare` vérifie que le rendu porte la densité
+de la RÉFÉRENCE D'INTENSITÉ (un rendu plat peut être conforme) — comparer à la
+source de style ne donne que son plancher à elle. Un ÉCART se corrige en
+composition, pas en désactivant l'instrument. Si l'intensité vient d'un médium
+non-web, `compare` ne chiffre que le plancher : le juge des effets transposés
+est le demandeur, écran par écran.
 
 Une panne (tokens corrompus, capture qui lève) ferme la porte ; seul un outil
 absent la laisse ouverte. Une dérive signalée se corrige en revenant aux tokens ;
