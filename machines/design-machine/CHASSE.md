@@ -36,6 +36,11 @@ dm extract <url> --label cand-N --motion --screenshot cand-N.png --full-page
 (keyframes nommées, survols mesurés, rAF signalé). La capture pleine page est
 la pièce visuelle du dossier.
 
+Un candidat bloque l'extraction (anti-bot, page blanche) ? Escalade dans cet
+ordre : `--headed`, puis le vrai Chrome de l'utilisateur via claude-in-chrome.
+Toujours bloqué → écarter le candidat et le dire ; on n'ajoute pas d'outil de
+contournement pour un seul site (D-010).
+
 ## 3. Présenter, faire choisir
 
 Un tableau : URL · les 6 nombres · une ligne sur ce que ce site apporte · la
