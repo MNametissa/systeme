@@ -24,6 +24,50 @@ La correction n'est pas de les fusionner, mais de donner à Rédaction son
 
 ---
 
+## T0 — Exhumer la morgue *(à faire en premier : ça change T2 et T5)*
+
+**Constat du 2026-07-27** : `~/.claude-mecid/skills/_morgue/` ne contient pas que
+de la doctrine morte. Elle contient **39 scripts exécutables** — le barreau 1 de
+D-002, le plus fort. L'autopsie (`analyses/01`) n'a compté que la prose et a
+conclu « ce qui était bon est devenu bootstrap.sh » : vrai du texte, faux de
+l'outillage. Trois portes lancées à l'instant répondent correctement :
+
+```
+ears-conforme.py    → PORTE 1 — ÉCHEC : syntaxe EARS (nfr.template.md:9)
+etats.py            → ATTAQUE 1 — TENUE : tout état atteignable, aucun piège
+no-placeholders.sh  → PORTE 1 — OK : aucun placeholder
+```
+
+- [ ] **Supprimer les 3 `SKILL.md`** (16 Ko de doctrine chacun) — D-001 tient :
+      c'est le langage privé qui a échoué, pas l'outillage
+- [ ] **Supprimer `spec-forge/scripts/mermaid/node_modules`** — 172 Mo sur les
+      173 Mo de la morgue. Le vrai code tient dans le dernier mégaoctet.
+- [ ] **Supprimer `registry-complete.py` et `flag-charter-sync.sh`** — couplées à
+      `CMAR.md`, déjà condamnées par D-017
+- [ ] **Sortir les scripts vers `instruments/`**, par famille :
+      - cmar (11) : `no-placeholders`, `red-first`, `layer-direction`,
+        `deps-verified`, `debt-report`, `strangler-ratchet`, `run-all`,
+        `install-hooks` — ce sont les portes que D-017 propose de réécrire ;
+        **elles existent, il faut les éprouver, pas les réécrire**
+      - spec-forge (10 portes de documents) : `provenance-verifiable`,
+        `falsifiabilite`, `tracabilite`, `anti-duplication`, `matrice-fermee`,
+        `inconnues-registre`, `use-cases-complets`, `ears-conforme`,
+        `diagrammes-compilent`
+      - spec-audit (6 attaques exécutables) : `etats`, `autorisation`, `bornes`,
+        `concurrence`, `attaque`, `common` — le protocole 05 exige « faille =
+        scénario exécutable » ; celles-ci le sont
+- [ ] **Éprouver chacun sur un cas réel**, garder ce qui capture, jeter le reste
+      (méthode du noyau : zéro capture après trois tranches → suppression)
+- [ ] **Corriger `analyses/01_AUTOPSIE_SKILLS.md`** : l'autopsie a manqué les
+      instruments. Écrire ce qu'elle a manqué et pourquoi (elle jugeait la
+      doctrine, pas le dossier).
+- [ ] Trancher **D-017** au journal une fois les portes éprouvées
+
+**Critère d'acceptation** : chaque script conservé a tourné sur un cas réel du
+dépôt, avec sa sortie citée ; chaque script jeté a une ligne qui dit pourquoi.
+
+---
+
 ## T1 — Le `.docx` de PTF *(à faire par Marcel, pas par une session)*
 
 Le seul défaut qui rend la machine de rédaction inutilisable pour son cas d'usage
@@ -42,10 +86,26 @@ modèle sans qu'aucune mise en page ne soit régénérée.
 
 ---
 
-## T2 — `verif_livrable.sh` : la porte manquante de la Rédaction
+## T2 — La porte manquante de la Rédaction : **éprouver avant d'écrire**
 
 Ferme R2 (les règles fortes sans mécanisme). Principe : l'instrument **énumère**,
 le modèle **juge**, le delta tranche. Aucun jugement dans le script.
+
+> **Requalifié le 2026-07-27.** La morgue contient déjà 10 portes de documents
+> (`spec-forge/scripts/gates/`), dont trois qui portent exactement ce besoin :
+> `provenance-verifiable.py`, `falsifiabilite.py`, `tracabilite.py`. Écrire avant
+> de les avoir lancées, c'est violer l'échelle de réutilisation. Voir T0.
+
+### T2.a — D'abord : les lancer sur un livrable réel *(1 h, pas une session)*
+
+- [ ] `provenance-verifiable.py` sur un vrai document — fait-il le travail de
+      « chaque affirmation a une source » ?
+- [ ] `falsifiabilite.py` — attrape-t-il les affirmations non réfutables ?
+- [ ] `tracabilite.py` — suit-il une exigence de bout en bout ?
+- [ ] Verdict écrit : ce qui est couvert, ce qui manque. **Ce qui manque
+      seulement** devient T2.b.
+
+### T2.b — Ensuite : écrire le complément, et lui seul
 
 - [ ] **Population des affirmations chiffrées** — énumérer tout nombre du document
       (montants, délais, pourcentages, versions, effectifs) avec sa position.
@@ -166,13 +226,75 @@ Ne fait échouer aucun livrable ; à ne traiter qu'après T1-T5.
 
 ---
 
+## T8 — Le noyau (16 règles) et le ménage des skills
+
+Détail dans `DEFAUTS_noyau.md`. Le noyau n'est pas une machine : c'est une
+doctrine à test binaire, qui va dans `CLAUDE.md` et ne coûte aucune description.
+
+- [ ] **N1** — le grep F7 rate sa cible : `except.*:\s*pass` n'attrape que la forme
+      une-ligne, pas `except Exception:` + `pass` indenté (testé : 1 sur 2).
+      Correctif : `ruff` (S110/S112) ou `grep -Pzo`
+- [ ] **N4** — installation non idempotente (`cat >>` deux fois = deux copies) et
+      mauvais profil (`~/.claude/` au lieu de `~/.claude-mecid/`)
+- [ ] **N3** — aucun outil des recettes installé (`vulture`, `madge`, `knip`,
+      `pylint` tous absents) : à intégrer au `doctor` de T3
+- [ ] **N2** — retirer ou sourcer les 16 citations orphelines de `reference/` :
+      le document qui énonce F8 ne peut pas reposer sur des chiffres invérifiables
+- [ ] **N5** — porter sur S8 l'avertissement Odoo (champs XML, méthodes ORM
+      apparaissent morts) : c'est S8 qui autorise à supprimer
+- [ ] Décider : le noyau **remplace-t-il** une partie de `templates/CLAUDE.project.md` ?
+      Recouvrement réel sur F8/F2/F6, et le noyau est mieux écrit. À garder en
+      propre : moteur avant surface, fermeture de population, journal avant clôture
+- [ ] Ouvrir le **journal des reprises** que le noyau réclame (une ligne par
+      reprise + la règle qui aurait dû l'attraper). Sans lui, son propre critère de
+      réfutation est inapplicable — même trou que l'essai témoin
+
+### Ménage des skills *(inventaire du 2026-07-27)*
+
+Actif en session `mecid` : 2 skills perso + 14 Superpowers = **16**.
+Dormants dans `~/.claude/skills/` : **15**, jamais chargés (mauvais profil).
+
+- [ ] `n8n-workflow-router.md` — lien symbolique vers un **fichier**, pas un
+      dossier avec `SKILL.md` : chargeable par aucun profil. Cassé depuis mars.
+- [ ] Trancher le sort des 15 dormants : rapatrier ou enterrer. S'ils sont
+      rapatriés, ils importent **six doublons** de Superpowers (`tdd`,
+      `diagnose`, `write-a-skill`, `grill-me`/`grill-with-docs`,
+      `to-prd`/`to-issues`/`triage`) et **un conflit doctrinal** :
+      `improve-codebase-architecture` note l'architecture, ce que le noyau rejette
+      nommément. Candidats au rapatriement : `caveman`, `zoom-out`.
+- [ ] Règle de tri — celle du noyau, appliquée aux skills : *deux règles sur le
+      même mode d'échec se cannibalisent*. Test de suppression = test d'ajout :
+      mode d'échec non couvert ? déclencheur observable ? test binaire ?
+
+### `odoo-doc-pdf` — à garder, et à prendre pour modèle
+
+Le seul paquet opérationnel tel quel (`wkhtmltopdf 0.12.5`, `pdftoppm`, `fc-list`
+tous présents). Instrument-d'abord : `gen_reference.py` (AST + SQL de la base
+installée), `build_pdf.sh` avec grep bloquant, vérification du **rendu** page à
+page. Sa thèse — « une doc fausse a exactement la même tête qu'une doc juste ;
+chaque affirmation a une source désignée, rien ne vient de la mémoire » — est le
+problème racine, retrouvé indépendamment.
+
+- [ ] S'en servir de gabarit pour ce que `machine-redaction` doit devenir :
+      un skill + deux instruments, pas huit skills et zéro
+- [ ] Surveiller : SQL couplé au schéma **Odoo 19** (isolé, assumé) ;
+      `wkhtmltopdf` **abandonné en amont** — fonctionne, ne recevra plus de
+      correctif
+
+---
+
 ## Ordre
 
-1. **T1** par Marcel — rien ne le remplace, tout en dépend
-2. **T2** puis **T3** — la porte manquante, puis la détection des préconditions
-3. **T5** — la machine Design cesse de pouvoir mentir
-4. **T4**, **T6** — conventions et câblage
-5. **T7** — confort
+1. **T0** — exhumer la morgue. En premier, parce que ça change T2 et T5 : on
+   n'écrit pas ce qui existe déjà et qu'on n'a pas éprouvé.
+2. **T1** par Marcel — rien ne le remplace, tout en dépend
+3. **T2.a** — lancer les portes exhumées sur un livrable réel, avant d'écrire
+4. **T3** — `doctor` sur les trois paquets (préconditions, outils, profil)
+5. **T5** — la machine Design cesse de pouvoir mentir
+6. **T2.b**, **T4**, **T6**, **T8** — le complément, les conventions, le câblage
+7. **T7** — confort
 
-La machine **Coding** n'est pas encore reçue : ce plan est incomplet par
-construction, et la troisième pièce peut le réordonner.
+La machine **Coding** n'existe pas comme machine : elle a des règles (noyau),
+une méthode (Superpowers), une forme amont (spec-kit) — et **un seul instrument**
+(`deps.py`). C'est le vrai trou du dispositif, et T0 est le premier endroit où
+chercher de quoi le combler.
