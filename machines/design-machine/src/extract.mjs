@@ -1,6 +1,7 @@
 import { existsSync } from 'node:fs';
 import { collector } from './collect.mjs';
 import { motionProbe, motionSnapshot, motionStatics, hoverTargets } from './motion.mjs';
+import { intensityCollector } from './intensity.mjs';
 
 // puppeteer-core plutot que puppeteer : on utilise le Chromium deja installe,
 // pas 150 Mo telecharges a l'install. Sur Linux Mint, la detection ci-dessous suffit.
@@ -78,6 +79,8 @@ export async function capture(url, opts = {}) {
     }
 
     const payload = await page.evaluate(collector);
+
+    if (opts.intensity) payload.intensity = await page.evaluate(intensityCollector);
 
     if (opts.motion) {
       // Marque la fin de la fenetre scroll : tout ce qui apparait apres vient

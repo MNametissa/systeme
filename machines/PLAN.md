@@ -218,6 +218,21 @@ coupées aux virgules internes (corrigé).
 
 ---
 
+## T5ter — `dm compare` : la densité mesurée, source vs rendu — **FAIT (2026-07-27)**
+
+« Trop plat, pas assez intense » décomposé en décomptes (`src/intensity.mjs` +
+`src/compare.mjs`) : animés/visibles, boucles infinies, rotations, ombres dures
++ blocs décalés (la profondeur manga sans box-shadow), chevauchements hors
+parenté (l'occlusion), saut typographique max/base. Rendu < 50 % de la source
+sur une métrique = ÉCART, sortie 1. Le seuil est une heuristique assumée ; le
+North Star reste juge humain (strate 3 non mesurable, D-003).
+
+Éprouvé en réel : bonito vs shoguna → 1 écart (chevauchements 474 % → 130 %),
+qui a nommé le manque exact (le collage) là où « le feeling ne matche pas » ne
+nommait rien. 42 tests verts.
+
+---
+
 ## T6 — Câblage et périmètres (à trancher, pas à coder)
 
 - [x] **D5** — porte design câblée en `Stop` (snippet + hook mis à jour, D-030)

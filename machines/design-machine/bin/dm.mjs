@@ -41,6 +41,11 @@ design-machine — extraire, composer, verifier
   dm verify <url> [--master design-system/tokens.json] [--json] [--warn-only]
       Compare un rendu au MASTER. Sortie 1 si non conforme.
 
+  dm compare <url-source> <url-rendu> [--json] [--warn-only]
+      Compare la DENSITE mesuree : animes/visibles, boucles infinies, rotations,
+      ombres dures + blocs decales, chevauchements, saut typographique.
+      Rendu sous la moitie de la source sur une metrique = ECART, sortie 1.
+
   dm gate [<url>] [--json] [--warn-only] [--no-impeccable]
       Porte unifiee : dm verify + impeccable detect, un seul verdict.
       Une etape absente (outil non installe) est ignoree ; une panne ferme.
@@ -144,6 +149,24 @@ async function main() {
     const v = composeVerdict(steps);
     console.log(flag('json', false) ? JSON.stringify(v, null, 2) : formatVerdict(v));
     return v.pass || flag('warn-only', false) ? 0 : 1;
+  }
+
+  if (cmd === 'compare') {
+    const [srcUrl, renduUrl] = positional;
+    if (!srcUrl || !renduUrl) { console.error(USAGE); return 2; }
+    const { capture } = await import('../src/extract.mjs');
+    const { compareIntensity, formatCompare } = await import('../src/compare.mjs');
+    console.error(`  ouverture ${srcUrl}`);
+    const a = await capture(srcUrl, { intensity: true });
+    console.error(`  ouverture ${renduUrl}`);
+    const b = await capture(renduUrl, { intensity: true });
+    const rows = compareIntensity(a.intensity, b.intensity);
+    if (flag('json', false)) {
+      console.log(JSON.stringify(rows.map(({ fmt, ...r }) => r), null, 2));
+    } else {
+      console.log(formatCompare(rows, [srcUrl, renduUrl]));
+    }
+    return rows.some(r => r.ecart) && !flag('warn-only', false) ? 1 : 0;
   }
 
   if (cmd === 'verify') {

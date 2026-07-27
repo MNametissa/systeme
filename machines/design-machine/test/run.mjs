@@ -370,6 +370,51 @@ test('le MASTER rend la motion etendue et avoue le non-instrumente', () => {
 });
 
 
+// --- comparaison de densite ---
+
+const { deriveIntensity, compareIntensity, formatCompare } = await import('../src/compare.mjs');
+
+const rawBonito = {
+  visible: 500, animated: 60, infiniteLoops: 8, rotated: 25,
+  hardShadows: 30, darkPseudo: 10, overlapPairs: 40, sampled: 200,
+  sizes: { 16: 300, 133: 4 }
+};
+const rawPlat = {
+  visible: 120, animated: 2, infiniteLoops: 0, rotated: 0,
+  hardShadows: 0, darkPseudo: 0, overlapPairs: 2, sampled: 60,
+  sizes: { 16: 80, 76: 3 }
+};
+
+test('deriveIntensity produit des ratios, pas des impressions', () => {
+  const d = deriveIntensity(rawBonito);
+  assert.equal(d.animRatio, 60 / 500);
+  assert.equal(d.offsetBlocks, 40);
+  assert.equal(d.typeJump, 8.31);
+});
+
+test('compareIntensity marque ECART quand le rendu porte moins de la moitie', () => {
+  const rows = compareIntensity(rawBonito, rawPlat);
+  const parCle = Object.fromEntries(rows.map(r => [r.key, r]));
+  assert.equal(parCle.animRatio.ecart, true);
+  assert.equal(parCle.infiniteLoops.ecart, true);
+  assert.equal(parCle.offsetBlocks.ecart, true);
+  // saut typographique 8.31 → 4.75 : au-dessus de la moitie, pas un ecart
+  assert.equal(parCle.typeJump.ecart, false);
+});
+
+test('compareIntensity ne signale rien entre deux pages equivalentes', () => {
+  const rows = compareIntensity(rawBonito, rawBonito);
+  assert.equal(rows.filter(r => r.ecart).length, 0);
+  assert.ok(formatCompare(rows).includes('DENSITE COMPARABLE'));
+});
+
+test('formatCompare nomme les ecarts et garde le juge humain', () => {
+  const out = formatCompare(compareIntensity(rawBonito, rawPlat));
+  assert.ok(out.includes('ECART'));
+  assert.ok(out.includes('North Star'));
+});
+
+
 // --- parseur d'arguments ---
 
 const { parseArgs, BOOL_FLAGS } = await import('../src/args.mjs');

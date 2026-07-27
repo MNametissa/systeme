@@ -46,8 +46,13 @@ MASTER — le documenter à la main, jamais l'estimer.
 ## Avant de livrer, et après toute modification d'UI
 
 ```
-dm gate <url du rendu>                # sortie 1 = porte fermée
+dm gate <url du rendu>                   # conformité au contrat ; sortie 1 = porte fermée
+dm compare <url source> <url du rendu>   # densité mesurée (animations, profondeur, collage)
 ```
+
+`gate` vérifie le vocabulaire ; `compare` vérifie que le rendu porte la même
+densité que la source (un rendu plat peut être conforme). Un ÉCART se corrige
+en composition, pas en désactivant l'instrument.
 
 Une panne (tokens corrompus, capture qui lève) ferme la porte ; seul un outil
 absent la laisse ouverte. Une dérive signalée se corrige en revenant aux tokens ;
