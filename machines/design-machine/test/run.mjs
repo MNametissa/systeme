@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { normalize, typeScale, spaceUnit, toHex } from '../src/normalize.mjs';
+import { normalize, typeScale, spaceUnit, toHex, motionLayerExt } from '../src/normalize.mjs';
 import { merge, parseMap } from '../src/merge.mjs';
 import { renderMaster, renderCss } from '../src/render.mjs';
 import { verify } from '../src/verify.mjs';
@@ -297,6 +297,76 @@ test('une panne ferme la porte — skip vaut pour un outil absent, pas pour une 
   const out = formatVerdict(v);
   assert.ok(out.includes('PORTE FERMEE'));
   assert.ok(out.includes('PANNE'));
+});
+
+
+// --- couche motion etendue ---
+
+const motionExtFixture = {
+  probe: {
+    markSettled: 2000, markHover: 6000, rafTicks: 4, styleMutations: 2,
+    samples: [
+      { type: 'CSSAnimation', name: 'spin', duration: 900, easing: 'linear', iterations: 'infinite', target: 'DIV.loader', firstAt: 300, seen: 6 },
+      { type: 'CSSTransition', name: 'opacity', duration: 400, easing: 'ease-out', iterations: 1, target: 'SECTION.reveal', firstAt: 3500, seen: 2 }
+    ]
+  },
+  statics: {
+    sheetsTotal: 2, sheetsBlocked: 1,
+    keyframes: [{ name: 'spin', steps: 2, properties: ['transform'] }],
+    pseudo: [{ selector: '.btn:hover', state: 'hover', properties: ['background-color'] }]
+  },
+  hover: [{ target: 'A.btn', transitions: [{ name: 'background-color', duration: 200, easing: 'ease' }] }]
+};
+
+test('motionLayerExt classe loaders (avant stabilisation) et scroll (apres)', () => {
+  const x = motionLayerExt(motionExtFixture);
+  assert.equal(x.loaders.length, 1);
+  assert.equal(x.loaders[0].name, 'spin');
+  assert.equal(x.loaders[0].iterations, 'infinite');
+  assert.equal(x.onScroll.length, 1);
+  assert.equal(x.onScroll[0].duration, 400);
+});
+
+test('motionLayerExt porte le mesure du survol et le declare du CSSOM', () => {
+  const x = motionLayerExt(motionExtFixture);
+  assert.equal(x.interactions[0].target, 'A.btn');
+  assert.equal(x.interactions[0].transitions[0].duration, 200);
+  assert.equal(x.keyframes[0].name, 'spin');
+  assert.equal(x.hoverDeclared[0].state, 'hover');
+  assert.equal(x.unmeasured.blockedSheets, 1);
+});
+
+test('motionLayerExt n invente rien sur une page statique', () => {
+  const x = motionLayerExt({ probe: { markSettled: 2000, rafTicks: 3, styleMutations: 0, samples: [] }, statics: { keyframes: [], pseudo: [], sheetsBlocked: 0 }, hover: [] });
+  assert.equal(x.loaders.length + x.onScroll.length + x.interactions.length + x.keyframes.length, 0);
+  assert.equal(x.unmeasured.jsAnimationSuspected, false);
+});
+
+test('motionLayerExt signale le mouvement rAF sans l estimer', () => {
+  const x = motionLayerExt({ probe: { markSettled: 2000, rafTicks: 900, styleMutations: 450, samples: [] }, statics: { keyframes: [], pseudo: [] }, hover: [] });
+  assert.equal(x.unmeasured.jsAnimationSuspected, true);
+  assert.equal(x.loaders.length, 0, 'detecter n est pas inventer des tokens');
+});
+
+test('normalize embarque la couche etendue seulement si elle a ete captee', () => {
+  const sans = normalize(siteA, 'A');
+  assert.equal(sans.motion.extended, undefined);
+  const avec = normalize({ ...siteA, motionExt: motionExtFixture }, 'A');
+  assert.equal(avec.motion.extended.loaders[0].name, 'spin');
+});
+
+test('le MASTER rend la motion etendue et avoue le non-instrumente', () => {
+  const src = normalize({ ...siteA, motionExt: motionExtFixture }, 'A');
+  const t = merge([src], parseMap('typography=A,palette=A,spatial=A,motion=A,surfaceStyle=A'));
+  const md = renderMaster(t);
+  assert.ok(md.includes('spin 900ms ×infinite'));
+  assert.ok(md.includes('Survol mesure'));
+  assert.ok(md.includes('cross-origin'));
+  // rafTicks 4 : pas de faux soupcon sur une page sage
+  assert.ok(!md.includes('Mouvement non instrumente'));
+  const suspect = structuredClone(t);
+  suspect.motion.extended.unmeasured.jsAnimationSuspected = true;
+  assert.ok(renderMaster(suspect).includes('Mouvement non instrumente detecte'));
 });
 
 

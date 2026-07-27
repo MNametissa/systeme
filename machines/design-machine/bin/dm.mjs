@@ -21,8 +21,10 @@ const write = (path, content) => {
 const USAGE = `
 design-machine — extraire, composer, verifier
 
-  dm extract <url> --label A [--out sources/A.json] [--headed] [--screenshot a.png]
+  dm extract <url> --label A [--motion] [--out sources/A.json] [--headed] [--screenshot a.png]
       Ouvre l'url, lit les computed styles du DOM rendu, ecrit les tokens normalises.
+      --motion : capture aussi keyframes, loaders, apparitions au scroll, survols
+      mesures — et SIGNALE le mouvement JS non instrumentable (rAF) sans l'estimer.
 
   dm merge --sources sources/ --map typography=A,palette=B,spatial=B,motion=C,surfaceStyle=A
            [--out design-system/]
@@ -59,6 +61,7 @@ async function main() {
     console.error(`  ouverture ${url}`);
     const payload = await capture(url, {
       headed: !!flag('headed', false),
+      motion: !!flag('motion', false),
       screenshot: typeof flag('screenshot') === 'string' ? flag('screenshot') : undefined,
       waitFor: typeof flag('wait-for') === 'string' ? flag('wait-for') : undefined,
       width: Number(flag('width', 1440))

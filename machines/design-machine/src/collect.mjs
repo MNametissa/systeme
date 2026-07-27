@@ -70,10 +70,12 @@ export function collector() {
       bump(acc.borderColor, s.borderTopColor);
     }
 
-    // -- motion
-    for (const d of s.transitionDuration.split(',')) bump(acc.duration, d);
-    for (const e of s.transitionTimingFunction.split(',')) bump(acc.easing, e);
-    if (s.animationDuration) for (const d of s.animationDuration.split(',')) bump(acc.duration, d);
+    // -- motion : ne couper que les virgules hors parentheses, sinon
+    // cubic-bezier(0.4, 0, 0.2, 1) devient quatre morceaux sans sens
+    const splitList = v => String(v).split(/,(?![^(]*\))/);
+    for (const d of splitList(s.transitionDuration)) bump(acc.duration, d);
+    for (const e of splitList(s.transitionTimingFunction)) bump(acc.easing, e);
+    if (s.animationDuration) for (const d of splitList(s.animationDuration)) bump(acc.duration, d);
 
     // -- spatial : padding et gap uniquement (les marges sont trop bruitees)
     for (const p of [s.paddingTop, s.paddingLeft, s.rowGap, s.columnGap]) bump(acc.space, p);

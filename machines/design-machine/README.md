@@ -43,7 +43,7 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test        # 32 tests sur les parties deterministes, sans navigateur
+npm test        # 38 tests sur les parties deterministes, sans navigateur
 ```
 
 ---
@@ -53,8 +53,19 @@ npm test        # 32 tests sur les parties deterministes, sans navigateur
 ```bash
 dm extract https://exemple-a.com --label A
 dm extract https://exemple-b.com --label B --screenshot b.png
-dm extract https://exemple-c.com --label C
+dm extract https://exemple-c.com --label C --motion
 ```
+
+`--motion` etend la capture au mouvement, en trois instruments :
+
+- **CSSOM** — `@keyframes` (nom, etapes, proprietes) et regles `:hover`/`:focus`/
+  `:active` declarees. Les feuilles cross-origin illisibles sont comptees.
+- **`document.getAnimations()` echantillonne** — au chargement (loaders), pendant
+  le deroule (apparitions au scroll), et au survol programmatique des elements
+  interactifs (durees REELLES des transitions declenchees).
+- **Detecteur de non-instrumentable** — le mouvement pilote en JS pur (rAF, GSAP,
+  canvas) ne produit aucun token : il est detecte (ticks rAF, mutations de style
+  inline) et signale dans le MASTER, jamais estime.
 
 Ce qui se passe : Chromium ouvre l'url, attend le reseau et les polices, deroule
 toute la page (le lazy-load cache la moitie des styles a l'ouverture), puis lit
@@ -231,8 +242,9 @@ Elles sont reelles, pas cosmetiques. A calibrer sur tes propres sources.
   pourcentages absolus sont approximatifs. Le seuil de 2 % est a ajuster.
 - **Un seul viewport par extraction.** Le responsive n'est pas capture. Relance
   avec `--width 375` pour comparer, la fusion des deux n'est pas automatisee.
-- **Etat au repos uniquement.** Pas de `:hover`, pas de `:focus`, pas d'etat
-  ouvert. Les transitions sont lues sur les proprietes declarees, pas jouees.
+- **Sans `--motion`, etat au repos uniquement.** Avec, le survol est mesure et
+  les animations jouees sont lues — mais pas d'etat ouvert (menu, modale), et le
+  mouvement rAF/canvas reste seulement detecte, jamais tokenise.
 - **Pas de conversion OKLCH.** Les couleurs sortent en hexadecimal sRGB. Si tu
   veux raisonner en luminosite perceptuelle, la conversion reste a ecrire.
 - **Le mode sombre n'est pas separe.** Un site qui suit `prefers-color-scheme`
@@ -250,7 +262,8 @@ Elles sont reelles, pas cosmetiques. A calibrer sur tes propres sources.
 ```
 bin/dm.mjs              CLI
 src/args.mjs            parseur d'arguments (booleens vs valeurs)
-src/collect.mjs         execute dans la page — le seul code navigateur
+src/collect.mjs         execute dans la page — code navigateur
+src/motion.mjs          execute dans la page — sonde, CSSOM, survol (--motion)
 src/extract.mjs         pilotage Chromium
 src/normalize.mjs       brut -> cinq couches
 src/merge.mjs           composition, refus des non-composables
@@ -264,7 +277,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            32 tests, sans navigateur ni Impeccable
+test/run.mjs            38 tests, sans navigateur ni Impeccable
 ```
 
 MIT.

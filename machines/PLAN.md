@@ -195,6 +195,29 @@ fixture locale, bac à sable actif.
 
 ---
 
+## T5bis — Couche motion étendue : interactions, loaders, animations — **FAIT (2026-07-27)**
+
+`dm extract --motion` : trois instruments navigateur, un refus (`src/motion.mjs`).
+
+- [x] **États `:hover`/`:focus`/`:active`** — CSSOM (déclaré) + survol
+      programmatique avec `getAnimations()` (durées réelles mesurées)
+- [x] **`@keyframes`** — énumération CSSOM : nom, étapes, propriétés
+- [x] **`getAnimations()` échantillonné** — sonde installée avant navigation,
+      marques temporelles : chargement (loaders) / déroulé (scroll) / survol
+- [x] **Refus du point 4** : rAF et mutations de style inline comptés et
+      SIGNALÉS (« mouvement non instrumenté »), jamais estimés (D-031)
+
+**Critère d'acceptation atteint** : fixture 4 mouvements → loader `spin 900ms
+×infinite`, scroll `400ms ease-out`, survol `200ms` mesurés ; rAF signalé
+(207 ticks) sans token. Page statique : zéro invention (test). 38 tests verts.
+Éprouvé sur site réel (bonito-flakes-for-pets.com, 545 éléments) : 20 keyframes
+nommées, 5 boucles infinies, survol 500ms mesuré, 30 règles hover, Lenis/GSAP
+signalé (1581 ticks rAF). Deux défauts réels attrapés par l'essai : timeout sur
+réseau jamais apaisé (repli sur `document.readyState`), courbes `cubic-bezier`
+coupées aux virgules internes (corrigé).
+
+---
+
 ## T6 — Câblage et périmètres (à trancher, pas à coder)
 
 - [x] **D5** — porte design câblée en `Stop` (snippet + hook mis à jour, D-030)

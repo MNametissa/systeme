@@ -74,6 +74,39 @@ export function spaceUnit(spaceBag) {
   return { unit: best.unit, coverage: +best.coverage.toFixed(2), steps };
 }
 
+// Structure la capture motion etendue (mode --motion). Tout est mesure ou
+// declare ; le mouvement pilote en JS pur (rAF, styles inline) est SIGNALE
+// via unmeasured, jamais converti en tokens — detecter n'est pas estimer.
+export function motionLayerExt(ext) {
+  if (!ext) return null;
+  const probe = ext.probe || {};
+  const samples = probe.samples || [];
+  const settled = probe.markSettled ?? 0;
+  const hoverMark = probe.markHover ?? Infinity;
+  const fmt = s => ({ name: s.name, type: s.type, duration: s.duration, easing: s.easing, iterations: s.iterations, target: s.target });
+  const statics = ext.statics || {};
+  const rafTicks = probe.rafTicks || 0;
+  const styleMutations = probe.styleMutations || 0;
+  return {
+    keyframes: (statics.keyframes || []).slice(0, 20),
+    hoverDeclared: (statics.pseudo || []).slice(0, 30),
+    loaders: samples.filter(s => s.firstAt <= settled && s.type === 'CSSAnimation').map(fmt).slice(0, 10),
+    onScroll: samples.filter(s => s.firstAt > settled && s.firstAt <= hoverMark).map(fmt).slice(0, 15),
+    interactions: (ext.hover || []).map(h => ({
+      target: h.target,
+      transitions: (h.transitions || []).map(t => ({ property: t.name, duration: t.duration, easing: t.easing })).slice(0, 6)
+    })).slice(0, 12),
+    unmeasured: {
+      rafTicks,
+      styleMutations,
+      blockedSheets: statics.sheetsBlocked || 0,
+      // Seuils heuristiques : une animation rAF continue produit des centaines
+      // de ticks pendant la fenetre de sonde ; un usage ponctuel, quelques-uns.
+      jsAnimationSuspected: rafTicks > 120 || styleMutations > 120
+    }
+  };
+}
+
 export function normalize(payload, label) {
   const r = payload.raw || {};
 
@@ -128,7 +161,8 @@ export function normalize(payload, label) {
 
     motion: {
       durations: rank(r.duration, 5).map(d => ({ value: d.value, ms: sec(d.value) })).filter(d => d.ms > 0),
-      easings: rank(r.easing, 4).map(e => e.value)
+      easings: rank(r.easing, 4).map(e => e.value),
+      ...(payload.motionExt ? { extended: motionLayerExt(payload.motionExt) } : {})
     },
 
     surfaceStyle: {

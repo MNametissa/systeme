@@ -69,6 +69,20 @@ export function renderMaster(t) {
   lines.push('');
   lines.push(`- Durees : ${list((mo.durations || []).map(d => `${d.ms}ms`))}`);
   lines.push(`- Courbes : ${list(mo.easings)}`);
+  const x = mo.extended;
+  if (x) {
+    lines.push(`- Keyframes declarees : ${list(x.keyframes.map(k => `${k.name} (${k.properties.join('/')})`))}`);
+    if (x.loaders.length) lines.push(`- Loaders (au chargement) : ${list(x.loaders.map(l => `${l.name} ${l.duration}ms ×${l.iterations} sur ${l.target}`))}`);
+    if (x.onScroll.length) lines.push(`- Au defilement : ${list(x.onScroll.map(s => `${s.name} ${s.duration}ms (${s.easing}) sur ${s.target}`))}`);
+    if (x.interactions.length) lines.push(`- Survol mesure : ${list(x.interactions.slice(0, 6).map(i => `${i.target} → ${i.transitions.map(tr => `${tr.property} ${tr.duration}ms`).join(', ')}`))}`);
+    lines.push(`- Etats declares (:hover/:focus/:active) : ${x.hoverDeclared.length} regle(s)`);
+    if (x.unmeasured.jsAnimationSuspected) {
+      lines.push(`- **Mouvement non instrumente detecte** (${x.unmeasured.rafTicks} ticks rAF, ${x.unmeasured.styleMutations} mutations de style inline) — a documenter a la main, jamais estime`);
+    }
+    if (x.unmeasured.blockedSheets) {
+      lines.push(`- ${x.unmeasured.blockedSheets} feuille(s) de style cross-origin illisible(s) : le declare est incomplet`);
+    }
+  }
   lines.push('');
 
   const su = t.surfaceStyle || {};

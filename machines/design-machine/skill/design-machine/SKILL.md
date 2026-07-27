@@ -34,10 +34,14 @@ Ne proposer aucune direction visuelle. Obtenir du demandeur, une question à la 
 Puis dérouler, sans réinventer :
 
 ```
-dm extract <url> --label A            # une commande par site source
+dm extract <url> --label A --motion   # une commande par site source
 dm merge --sources sources --map typography=A,palette=B,spatial=B,motion=C,surfaceStyle=A
 dm design-md --north-star "<la phrase du demandeur>"
 ```
+
+`--motion` capture aussi keyframes, loaders, apparitions au scroll et survols
+mesurés ; le mouvement JS pur (rAF) est signalé « non instrumenté » dans le
+MASTER — le documenter à la main, jamais l'estimer.
 
 ## Avant de livrer, et après toute modification d'UI
 

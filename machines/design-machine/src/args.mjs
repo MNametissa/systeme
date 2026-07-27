@@ -3,7 +3,7 @@
 // place apres un booleen (`dm gate --json <url>`) disparaissait et la commande
 // retombait sur sa cible par defaut.
 
-export const BOOL_FLAGS = new Set(['headed', 'json', 'warn-only', 'no-impeccable', 'dry-run']);
+export const BOOL_FLAGS = new Set(['headed', 'json', 'warn-only', 'no-impeccable', 'dry-run', 'motion']);
 
 export function parseArgs(tokens, boolFlags = BOOL_FLAGS) {
   const flags = {};
