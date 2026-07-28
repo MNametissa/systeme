@@ -280,6 +280,27 @@ nommait rien. 42 tests verts.
 
 ---
 
+## T5quater — Multi-stack : mobile, Flutter/RN/Electron/Ionic — **FAIT (2026-07-28)**
+
+Les stacks de Marcel. Trois pièces (`src/native.mjs`, `src/lint.mjs`) :
+
+- [x] `--mobile` sur extract/verify/gate/compare/density — émulation device
+      réelle (UA iPhone, 390×844, DPR 3, touch), `--width` propagé partout.
+      Prouvé : la densité mobile de bonito diffère du desktop sur les 6
+      métriques (2,7 % animés vs 0,7, 15 boucles vs 5, ×4.19 vs ×7).
+- [x] `dm export dart|ts` — projections natives du contrat (tokens.dart pour
+      Flutter, tokens.ts pour RN/Electron/Ionic), dérivées comme tokens.css,
+      rayon « pilule » borné à 9999. Éprouvé sur shoguna.
+- [x] `dm lint <dir>` — porte statique pour les rendus non mesurables
+      (Flutter canvas, natif) : population des littéraux de couleur hors
+      fichiers tokens/theme, fichier:ligne + décompte, `dm-lint-ignore` avec
+      raison pour l'assumé, refus du vide (code 2). Éprouvé sur shoguna :
+      20 fichiers, zéro littéral — la discipline tokens tient.
+- [x] 48 tests verts (un faux-pass async attrapé au passage : le harnais est
+      synchrone, les tests doivent l'être).
+
+---
+
 ## T6 — Câblage et périmètres (à trancher, pas à coder)
 
 - [x] **Rédaction câblée en session (2026-07-28)** — `skill/SKILL.md` mince

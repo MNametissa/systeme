@@ -40,11 +40,26 @@ export async function capture(url, opts = {}) {
 
   try {
     const page = await browser.newPage();
-    await page.setViewport({
-      width: opts.width ?? 1440,
-      height: opts.height ?? 900,
-      deviceScaleFactor: 1
-    });
+    if (opts.mobile) {
+      // Vraie emulation device : sans UA mobile, beaucoup de sites servent le
+      // markup desktop et on mesurerait une fenetre etroite, pas du mobile.
+      await page.setUserAgent(
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1'
+      );
+      await page.setViewport({
+        width: opts.width ?? 390,
+        height: opts.height ?? 844,
+        deviceScaleFactor: 3,
+        isMobile: true,
+        hasTouch: true
+      });
+    } else {
+      await page.setViewport({
+        width: opts.width ?? 1440,
+        height: opts.height ?? 900,
+        deviceScaleFactor: 1
+      });
+    }
     // La sonde motion s'installe AVANT la navigation : les loaders vivent
     // dans les premieres centaines de millisecondes.
     if (opts.motion) await page.evaluateOnNewDocument(motionProbe);

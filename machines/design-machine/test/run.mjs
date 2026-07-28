@@ -424,6 +424,63 @@ test('formatDensity jauge une page seule (chasse aux references)', () => {
 });
 
 
+// --- projections natives + porte statique ---
+
+const { hexToDart, renderDart, renderTs } = await import('../src/native.mjs');
+const { scanContent, lintDir, formatLint } = await import('../src/lint.mjs');
+
+test('hexToDart convertit avec et sans alpha, refuse le non-hex', () => {
+  assert.equal(hexToDart('#262626'), '0xFF262626');
+  assert.equal(hexToDart('#000000 / 0.5'), '0x80000000');
+  assert.equal(hexToDart('transparent'), null);
+});
+
+test('export dart et ts portent le meme contrat que tokens.json', () => {
+  const dart = renderDart(tokensB);
+  assert.ok(dart.includes('Color(0xFFFFFFFF)'), 'fond');
+  assert.ok(dart.includes('static const double spaceUnit = 6;'));
+  assert.ok(dart.includes('Duration(milliseconds: 150)'));
+  const ts = renderTs(tokensB);
+  assert.ok(ts.includes(`"bg": "#ffffff"`));
+  assert.ok(ts.includes(`"spaceUnit": 6`));
+  // rounded-full de Tailwind : une pilule, pas 33 554 432px
+  const pill = renderTs({ ...tokensB, surfaceStyle: { radii: ['3.35544e+07px'] } });
+  assert.ok(pill.includes('9999'));
+});
+
+test('scanContent attrape hex, rgb et Color(0x…) avec leur ligne', () => {
+  const hits = scanContent('a { color: #ee1b2b; }\nconst c = Color(0xFF262626);\nx = rgba(0, 0, 0, 0.5)');
+  assert.equal(hits.length, 3);
+  assert.equal(hits[0].line, 1);
+  assert.equal(hits[1].kind, 'dart-color');
+});
+
+test('scanContent respecte dm-lint-ignore', () => {
+  const hits = scanContent('bad: #fff;\nok: #fff; // dm-lint-ignore — fond du canvas natif');
+  assert.equal(hits.length, 1);
+});
+
+const { mkdtempSync, mkdirSync: mkd, writeFileSync: wf } = await import('node:fs');
+const { tmpdir } = await import('node:os');
+const { join } = await import('node:path');
+
+test('lintDir enumere hors tokens/theme et refuse le vide', () => {
+  const dir = mkdtempSync(join(tmpdir(), 'dm-lint-'));
+  wf(join(dir, 'app.dart'), 'final c = Color(0xFF112233);');
+  wf(join(dir, 'tokens.dart'), 'final bg = Color(0xFF262626);');
+  mkd(join(dir, 'node_modules'));
+  wf(join(dir, 'node_modules', 'x.js'), 'c = "#123456"');
+  const res = lintDir(dir);
+  assert.equal(res.scanned, 1, 'tokens.dart et node_modules exclus');
+  assert.equal(res.findings.length, 1);
+  assert.ok(res.findings[0].file.endsWith('app.dart'));
+  mkd(join(dir, 'vide'));
+  const vide = lintDir(join(dir, 'vide'));
+  assert.equal(vide.scanned, 0);
+  assert.ok(formatLint(vide, 'x').includes("echec d'instrument"));
+});
+
+
 // --- parseur d'arguments ---
 
 const { parseArgs, BOOL_FLAGS } = await import('../src/args.mjs');

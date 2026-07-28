@@ -50,6 +50,19 @@ design-machine — extraire, composer, verifier
       La meme densite, pour une seule page — qualifier un candidat pendant la
       chasse aux references (voir CHASSE.md).
 
+  dm export <dart|ts> [--master design-system/tokens.json] [--out ...]
+      Projette le contrat en natif : tokens.dart (Flutter), tokens.ts
+      (React Native, Electron, Ionic). Derives, regeneres, jamais edites.
+
+  dm lint <dir> [--json]
+      Porte statique : enumere TOUT litteral de couleur (#hex, rgb(), hsl(),
+      Color(0x…)) hors fichiers tokens/theme. Pour les stacks dont le rendu ne
+      se mesure pas (Flutter, natif) — et second filet ailleurs. Sortie 1 si
+      litteraux, 2 si aucun fichier examine.
+
+  --mobile sur extract/verify/gate/compare/density : emulation device reelle
+  (UA iPhone, 390x844, DPR 3, touch) — pas une simple fenetre etroite.
+
   dm gate [<url>] [--json] [--warn-only] [--no-impeccable]
       Porte unifiee : dm verify + impeccable detect, un seul verdict.
       Une etape absente (outil non installe) est ignoree ; une panne ferme.
@@ -71,10 +84,11 @@ async function main() {
     const payload = await capture(url, {
       headed: !!flag('headed', false),
       motion: !!flag('motion', false),
+      mobile: !!flag('mobile', false),
       screenshot: typeof flag('screenshot') === 'string' ? flag('screenshot') : undefined,
       fullPage: !!flag('full-page', false),
       waitFor: typeof flag('wait-for') === 'string' ? flag('wait-for') : undefined,
-      width: Number(flag('width', 1440))
+      width: flag('width') ? Number(flag('width')) : undefined
     });
     const tokens = normalize(payload, label);
     const out = flag('out', `sources/${label}.json`);
@@ -129,7 +143,10 @@ async function main() {
       try {
         const tokens = JSON.parse(readFileSync(masterPath, 'utf8'));
         const { capture } = await import('../src/extract.mjs');
-        const res = verify(await capture(target, {}), tokens);
+        const res = verify(await capture(target, {
+          mobile: !!flag('mobile', false),
+          width: flag('width') ? Number(flag('width')) : undefined
+        }), tokens);
         steps.push({ name: 'dm verify', status: res.pass ? 'pass' : 'fail', detail: formatReport(res) });
       } catch (e) {
         // Panne, pas absence : tokens corrompus, capture qui leve, timeout.
@@ -161,10 +178,15 @@ async function main() {
     if (!srcUrl || !renduUrl) { console.error(USAGE); return 2; }
     const { capture } = await import('../src/extract.mjs');
     const { compareIntensity, formatCompare } = await import('../src/compare.mjs');
+    const capOpts = {
+      intensity: true,
+      mobile: !!flag('mobile', false),
+      width: flag('width') ? Number(flag('width')) : undefined
+    };
     console.error(`  ouverture ${srcUrl}`);
-    const a = await capture(srcUrl, { intensity: true });
+    const a = await capture(srcUrl, capOpts);
     console.error(`  ouverture ${renduUrl}`);
-    const b = await capture(renduUrl, { intensity: true });
+    const b = await capture(renduUrl, capOpts);
     const rows = compareIntensity(a.intensity, b.intensity);
     if (flag('json', false)) {
       console.log(JSON.stringify(rows.map(({ fmt, ...r }) => r), null, 2));
@@ -182,6 +204,8 @@ async function main() {
     console.error(`  ouverture ${url}`);
     const p = await capture(url, {
       intensity: true,
+      mobile: !!flag('mobile', false),
+      width: flag('width') ? Number(flag('width')) : undefined,
       screenshot: typeof flag('screenshot') === 'string' ? flag('screenshot') : undefined,
       fullPage: !!flag('full-page', false)
     });
@@ -189,12 +213,33 @@ async function main() {
     return 0;
   }
 
+  if (cmd === 'export') {
+    const target = positional[0];
+    const tokens = JSON.parse(readFileSync(flag('master', 'design-system/tokens.json'), 'utf8'));
+    const { renderDart, renderTs } = await import('../src/native.mjs');
+    if (target === 'dart') { write(flag('out', 'design-system/tokens.dart'), renderDart(tokens)); return 0; }
+    if (target === 'ts') { write(flag('out', 'design-system/tokens.ts'), renderTs(tokens)); return 0; }
+    console.error(USAGE); return 2;
+  }
+
+  if (cmd === 'lint') {
+    const dir = positional[0] || '.';
+    const { lintDir, formatLint } = await import('../src/lint.mjs');
+    const res = lintDir(dir);
+    console.log(flag('json', false) ? JSON.stringify(res, null, 2) : formatLint(res, dir));
+    if (!res.scanned) return 2;
+    return res.findings.length ? 1 : 0;
+  }
+
   if (cmd === 'verify') {
     const target = positional[0];
     if (!target) { console.error(USAGE); return 2; }
     const tokens = JSON.parse(readFileSync(flag('master', 'design-system/tokens.json'), 'utf8'));
     const { capture } = await import('../src/extract.mjs');
-    const payload = await capture(target, { width: Number(flag('width', 1440)) });
+    const payload = await capture(target, {
+      mobile: !!flag('mobile', false),
+      width: flag('width') ? Number(flag('width')) : undefined
+    });
     const res = verify(payload, tokens);
     console.log(flag('json', false) ? JSON.stringify(res, null, 2) : formatReport(res));
     return res.pass || flag('warn-only', false) ? 0 : 1;

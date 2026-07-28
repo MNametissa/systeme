@@ -72,6 +72,14 @@ Une panne (tokens corrompus, capture qui lève) ferme la porte ; seul un outil
 absent la laisse ouverte. Une dérive signalée se corrige en revenant aux tokens ;
 si la dérive est voulue, on régénère le MASTER — on ne contourne jamais la porte.
 
+## Stacks non-web
+
+Electron/Ionic/PWA : chaîne complète sur le localhost de dev. React Native :
+via Expo Web (proxy, le dire). Flutter : rendu canvas invisible aux instruments
+— la porte est `dm lint <dir>` (littéraux de couleur hors tokens/theme) et la
+consommation `dm export dart` (`dm export ts` pour RN/Electron). Mobile :
+ajouter `--mobile` (émulation device réelle) aux extract/verify/gate/compare.
+
 Commencer par :
 
 ```

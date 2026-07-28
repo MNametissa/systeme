@@ -43,7 +43,7 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test        # 38 tests sur les parties deterministes, sans navigateur
+npm test        # 48 tests sur les parties deterministes, sans navigateur
 ```
 
 ---
@@ -221,6 +221,31 @@ en code 2 pour qu'il corrige dans la foulee.
 
 ---
 
+## Stacks non-web : Flutter, React Native, Electron, Ionic
+
+Le contrat est `tokens.json` — `tokens.css` n'en est qu'une projection. Deux
+autres projections et une porte statique couvrent les stacks ou le rendu ne
+passe pas (ou pas seulement) par un DOM mesurable :
+
+```bash
+dm export dart      # design-system/tokens.dart — Flutter
+dm export ts        # design-system/tokens.ts  — React Native, Electron, Ionic
+dm lint <dir>       # litteraux de couleur hors tokens/theme : fichier:ligne + decompte
+```
+
+- **Electron / Ionic / PWA** : rendu navigateur → toute la chaine s'applique
+  (verify, gate, compare) sur le localhost de dev.
+- **React Native** : via Expo Web, la chaine s'applique en proxy — le rendu
+  natif differe a la marge, le dire plutot que l'ignorer.
+- **Flutter** : rendu canvas, invisible aux instruments DOM — `dm lint` est la
+  porte (le code, pas le rendu), `dm export dart` la consommation. Un litteral
+  assume se marque `dm-lint-ignore` avec sa raison.
+
+`--mobile` (extract, verify, gate, compare, density) : emulation device reelle —
+UA iPhone, 390x844, DPR 3, touch. Sans UA mobile, beaucoup de sites servent le
+markup desktop et on mesurerait une fenetre etroite, pas du mobile. Mesure : la
+densite mobile de bonito differe du desktop sur les six metriques.
+
 ## Licences de police
 
 `dm merge` liste dans `licenceReview` toute famille non systeme rencontree, et
@@ -270,6 +295,10 @@ src/merge.mjs           composition, refus des non-composables
 src/render.mjs          MASTER.md + tokens.css
 src/verify.mjs          comparaison au contrat
 src/designmd.mjs        derive DESIGN.md + design.json pour Impeccable
+src/native.mjs          derive tokens.dart / tokens.ts (dm export)
+src/lint.mjs            porte statique — litteraux de couleur hors tokens
+src/intensity.mjs       execute dans la page — decomptes de densite
+src/compare.mjs         densite source vs rendu (dm compare, dm density)
 src/impeccable.mjs      pont vers le detecteur et ses derogations
 src/gate.mjs            composition du verdict unique
 skill/design-machine/   SKILL.md — quand lancer quoi
@@ -277,7 +306,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            38 tests, sans navigateur ni Impeccable
+test/run.mjs            48 tests, sans navigateur ni Impeccable
 ```
 
 MIT.
