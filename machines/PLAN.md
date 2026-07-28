@@ -87,9 +87,19 @@ cahier de conception), la PTF déjà à moitié templatisée en syntaxe moustach
 - [x] `instruments/decouper_gabarit.py` — gabarit partiel (couverture +
       en-têtes/pieds seuls), purge des rels d'images et médias orphelins
       (1 média gardé sur 7), refus code 2 si ancre introuvable.
-- [x] Porte : `test/run.py`, 16 vérifications sur la vraie PTF.
-- [ ] Refaire le geste pour les 7 autres modèles (contrats, CDC…) — l'instrument
-      est générique, il manque leurs marqueurs moustache dans les sources.
+- [x] **Les 7 modèles balisés convertis** dans `templates/` (2026-07-28) —
+      6 étaient déjà à moitié balisés par Marcel. Il a fallu généraliser
+      l'instrument : recollage des marqueurs fragmentés entre runs Word
+      (62 dans le CDC), noms pointés (`{use_case.actors}`), boucles imbriquées
+      4 niveaux (source préfixée `item.`, prouvée au rendu), refus des
+      accolades hors convention (elles font dérailler le prétraitement docxtpl,
+      qui avalait 27 tags d'un coup). Piège notable : indexer par `id()` de
+      proxys lxml non matérialisés — identifiants instables, profondeurs
+      perdues puis réattribuées au hasard.
+- [x] Porte : `test/run.py`, 25 vérifications sur les 7 modèles réels.
+- [ ] `Contrat de prestation.docx` : source **non balisée** (0 marqueur,
+      refus code 2) — baliser la source (Marcel, ou geste outillé à définir),
+      puis `convertir_gabarit.py` fait le reste.
 
 **Critère d'acceptation atteint** : docxtpl produit une PTF complète à partir du
 modèle sans qu'aucune mise en page ne soit régénérée (préservation à l'octet

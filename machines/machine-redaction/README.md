@@ -9,6 +9,9 @@ sections nouvelles comprises — sans toucher à la coque.
 
 ```bash
 # 1. Convertir un modèle {moustache} en gabarit docxtpl ({{ }}, {%tr %}, {%p %})
+#    — gère les runs fragmentés par Word, les noms pointés ({use_case.actors}),
+#      les boucles imbriquées (source préfixée item.) et refuse les accolades
+#      hors convention plutôt que de livrer un gabarit corrompu
 python3 instruments/convertir_gabarit.py "../Modèles de docx/PTF - GINUTECH.docx" templates/ptf-standard.docx
 
 # 2. Découper un gabarit partiel (ex. couverture + en-têtes/pieds seulement)
@@ -40,6 +43,13 @@ doc.render({**ctx, "solution_description": sd})
 
 Sur un gabarit découpé (couverture seule), tout le corps se construit ainsi.
 
+## Gabarits livrés
+
+7 des 8 modèles de `Modèles de docx/` sont convertis dans `templates/` :
+ptf-standard, approche-gestion, cahier-conception, contrat-maintenance,
+contrat-partenariat, contrat-sous-traitance, modele-cdc. Manque
+`Contrat de prestation.docx` : source non balisée (0 marqueur, refus code 2).
+
 ## Ce que les instruments garantissent
 
 - seule `word/document.xml` est réécrite : styles, en-têtes, pieds, médias
@@ -52,7 +62,7 @@ Sur un gabarit découpé (couverture seule), tout le corps se construit ainsi.
 ## Porte
 
 ```bash
-python3 test/run.py   # 16 vérifications sur la vraie PTF, échec = code 1
+python3 test/run.py   # 25 vérifications sur les 7 modèles réels, échec = code 1
 ```
 
 ## Dépendances

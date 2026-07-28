@@ -21,7 +21,7 @@ INSTRUMENT = RACINE / "instruments" / "convertir_gabarit.py"
 SOURCE = DEPOT / "Modèles de docx" / "PTF - GINUTECH.docx"
 CONTEXTE = ICI / "fixtures" / "contexte_ptf.json"
 
-MOUSTACHE = re.compile(r"\{[#/]?[a-z_0-9]+\}")
+MOUSTACHE = re.compile(r"\{[#/]?[a-z_0-9]+(?:\.[a-z_0-9]+)*\}")
 JINJA = re.compile(r"\{\{|\{%")
 
 verifs = 0
@@ -215,7 +215,94 @@ if r.returncode != 2:
     echec("découpe: ancre introuvable", f"code {r.returncode} au lieu de 2")
 ok("découpe: ancre introuvable → code 2, jamais un OK muet")
 
-# ── 8. Refus du vide : docx sans marqueur → code 2 ────────────────────────
+# ── 8. Marqueurs fragmentés entre plusieurs runs (le cas Word réel) ───────
+import docx
+frag = tmp / "fragmente.docx"
+d = docx.Document()
+p = d.add_paragraph()
+p.add_run("Le client ")
+p.add_run("{cli")           # marqueur coupé en trois runs,
+p.add_run("ent_na")         # comme Word le fait après édition
+p.add_run("me} est engagé.")
+d.save(str(frag))
+r = subprocess.run([sys.executable, str(INSTRUMENT), str(frag), str(tmp / "frag-conv.docx")],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    echec("fragmentation", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+txt_frag = textes_docx(tmp / "frag-conv.docx")["word/document.xml"]
+if "{{ client_name }}" not in txt_frag or MOUSTACHE.findall(txt_frag):
+    echec("fragmentation", f"marqueur coupé non converti : {txt_frag!r}")
+ok("fragmentation: marqueur coupé en 3 runs converti")
+
+# ── 9. Les autres modèles balisés se convertissent et se rendent ──────────
+AUTRES = ["Approche de gestion.docx", "cahier de conception.docx",
+          "Contrat de maintenance.docx", "Contrat partenariat.docx",
+          "contrat-sous-traitance.docx", "Modèle CDC.docx"]
+for nom_doc in AUTRES:
+    src = DEPOT / "Modèles de docx" / nom_doc
+    conv = tmp / ("conv-" + nom_doc)
+    r = subprocess.run([sys.executable, str(INSTRUMENT), str(src), str(conv)],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        echec(f"modèle {nom_doc}", f"conversion code {r.returncode}\n{r.stdout}{r.stderr}")
+    for partie, txt in textes_docx(conv).items():
+        if MOUSTACHE.findall(txt):
+            echec(f"modèle {nom_doc}", f"moustaches restantes dans {partie}")
+    with zipfile.ZipFile(src) as z:
+        fixes = [n for n in z.namelist()
+                 if n == "word/styles.xml" or re.match(r"word/(header|footer)\d+\.xml$", n)
+                 or n.startswith("word/media/")]
+    for membre in fixes:
+        if octets(src, membre) != octets(conv, membre):
+            echec(f"modèle {nom_doc}", f"{membre} modifié")
+    dtpl = DocxTemplate(str(conv))
+    dtpl.render({})          # variables absentes → vide, mais zéro résidu exigé
+    vide_rendu = tmp / ("rendu-" + nom_doc)
+    dtpl.save(str(vide_rendu))
+    txt_r = textes_docx(vide_rendu)["word/document.xml"]
+    if JINJA.findall(txt_r) or MOUSTACHE.findall(txt_r):
+        echec(f"modèle {nom_doc}", f"résidus au rendu : {(JINJA.findall(txt_r) + MOUSTACHE.findall(txt_r))[:6]}")
+    ok(f"modèle {nom_doc}: converti, préservé, rendu sans résidu")
+
+# ── 9bis. CDC : les boucles imbriquées portent le contenu profond ─────────
+ctx_cdc = {"functional_modules": [{
+    "module_name": "GRC",
+    "submodules": [{
+        "submodule_name": "Prospection",
+        "features": [{
+            "feature_name": "Créer un prospect",
+            "use_case": {
+                "use_case_name": "Création d'une fiche prospect",
+                "actors": "Agent commercial",
+                "main_scenario_steps": [
+                    {"step_number": "1", "step_description": "Ouvrir la fiche prospect"},
+                    {"step_number": "2", "step_description": "Saisir les coordonnées"}],
+                "alternative_scenarios": [
+                    {"alt_step_number": "2a", "alt_description": "Le prospect existe déjà"}]}}]}]}]}
+cdc_conv = tmp / "conv-Modèle CDC.docx"
+dcdc = DocxTemplate(str(cdc_conv))
+dcdc.render(ctx_cdc)
+cdc_rendu = tmp / "cdc-profond.docx"
+dcdc.save(str(cdc_rendu))
+txt_cdc = textes_docx(cdc_rendu)["word/document.xml"]
+for attendu in ["Ouvrir la fiche prospect", "Saisir les coordonnées",
+                "Le prospect existe déjà", "Agent commercial"]:
+    if attendu not in txt_cdc:
+        echec("CDC imbriqué", f"contenu profond absent : {attendu}")
+ok("CDC: 4 niveaux d'imbrication rendus (module→sous-module→feature→étapes)")
+
+# ── 10. Refus d'une accolade hors convention (docxtpl la ferait exploser) ─
+brace = tmp / "accolade.docx"
+d = docx.Document()
+d.add_paragraph("Un texte avec {marqueur_valide} et une { accolade perdue.")
+d.save(str(brace))
+r = subprocess.run([sys.executable, str(INSTRUMENT), str(brace), str(tmp / "b.docx")],
+                   capture_output=True, text=True)
+if r.returncode != 1 or "accolade" not in r.stdout.lower():
+    echec("refus accolade", f"code {r.returncode}, sortie : {r.stdout!r}")
+ok("refus accolade: { hors convention → code 1, nommée dans la sortie")
+
+# ── 11. Refus du vide : docx sans marqueur → code 2 ───────────────────────
 import docx
 vide = tmp / "sans-marqueur.docx"
 d = docx.Document()
