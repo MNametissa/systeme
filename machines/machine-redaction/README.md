@@ -5,9 +5,15 @@ mise en page : le gabarit vient d'un vrai document envoyé, l'instrument le
 convertit, docxtpl le remplit. Le contenu peut différer d'un projet à l'autre —
 sections nouvelles comprises — sans toucher à la coque.
 
-## Les trois gestes
+## Les quatre gestes
 
 ```bash
+# 0. Baliser un document nu (ou re-baliser mieux un modèle existant) :
+#    le jugement « qu'est-ce qui est variable » s'écrit dans une carte JSON
+#    relisible (cartes/*.json : texte littéral → nom, occurrences ciblables),
+#    l'instrument l'applique — entrée sans capture = refus code 2
+python3 instruments/baliser_gabarit.py "../Modèles de docx/Contrat de prestation.docx" /tmp/balise.docx --carte cartes/contrat-prestation.json
+
 # 1. Convertir un modèle {moustache} en gabarit docxtpl ({{ }}, {%tr %}, {%p %})
 #    — gère les runs fragmentés par Word, les noms pointés ({use_case.actors}),
 #      les boucles imbriquées (source préfixée item.) et refuse les accolades
@@ -45,10 +51,10 @@ Sur un gabarit découpé (couverture seule), tout le corps se construit ainsi.
 
 ## Gabarits livrés
 
-7 des 8 modèles de `Modèles de docx/` sont convertis dans `templates/` :
+Les 8 modèles de `Modèles de docx/` sont convertis dans `templates/` :
 ptf-standard, approche-gestion, cahier-conception, contrat-maintenance,
-contrat-partenariat, contrat-sous-traitance, modele-cdc. Manque
-`Contrat de prestation.docx` : source non balisée (0 marqueur, refus code 2).
+contrat-partenariat, contrat-prestation (balisé par carte, geste 0),
+contrat-sous-traitance, modele-cdc.
 
 ## Ce que les instruments garantissent
 
@@ -62,7 +68,7 @@ contrat-partenariat, contrat-sous-traitance, modele-cdc. Manque
 ## Porte
 
 ```bash
-python3 test/run.py   # 25 vérifications sur les 7 modèles réels, échec = code 1
+python3 test/run.py   # 28 vérifications sur les 8 modèles réels, échec = code 1
 ```
 
 ## Dépendances

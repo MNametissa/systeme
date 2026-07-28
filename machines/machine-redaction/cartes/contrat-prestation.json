@@ -1,0 +1,23 @@
+[
+  {"texte": "CTR00005", "nom": "contract_number"},
+  {"texte": "17/04/2026", "nom": "contract_date"},
+  {"texte": "M. AZEBAZE xxxx", "nom": "client_rep_name"},
+  {"texte": "M. AZEBAZE", "nom": "client_name"},
+  {"texte": "Concevoir et déployer une application mobile", "nom": "project_name"},
+  {"texte": "Globalys", "nom": "project_code"},
+  {"texte": "concevoir et déployer une application mobile V1 connectée au backend GLOBALYS existant et conformément au mini cahier des charges validé", "nom": "activity_1"},
+  {"texte": "Formation du client à l’utilisation", "nom": "activity_2"},
+  {"texte": "XXXXXXXXX", "nom": "client_company_name"},
+  {"texte": "RC/DLA/xxxxxx", "nom": "client_rccm"},
+  {"texte": "+237 6xxxxxxxx", "nom": "client_phone"},
+  {"texte": "xxxxx@xxx.com", "nom": "client_email"},
+  {"texte": "Directeur Général", "nom": "client_rep_title"},
+  {"texte": "F005/04/2026", "nom": "invoice_number"},
+  {"texte": "17 Avril 2026", "nom": "invoice_date"},
+  {"texte": "17 Avril  2026", "nom": "signature_date"},
+  {"texte": "5 semaines", "nom": "delay_duration"},
+  {"texte": "750 000", "nom": "total_amount_num"},
+  {"texte": "Sept Cent cinquante mille", "nom": "total_amount_text"},
+  {"texte": "40 %", "nom": "advance_percent"},
+  {"texte": "60%", "nom": "balance_percent"}
+]

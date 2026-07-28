@@ -96,10 +96,16 @@ cahier de conception), la PTF déjà à moitié templatisée en syntaxe moustach
       qui avalait 27 tags d'un coup). Piège notable : indexer par `id()` de
       proxys lxml non matérialisés — identifiants instables, profondeurs
       perdues puis réattribuées au hasard.
-- [x] Porte : `test/run.py`, 25 vérifications sur les 7 modèles réels.
-- [ ] `Contrat de prestation.docx` : source **non balisée** (0 marqueur,
-      refus code 2) — baliser la source (Marcel, ou geste outillé à définir),
-      puis `convertir_gabarit.py` fait le reste.
+- [x] Porte : `test/run.py`, 28 vérifications sur les 8 modèles réels.
+- [x] **`instruments/baliser_gabarit.py`** (2026-07-28) — le geste « document
+      nu → gabarit » : le jugement (qu'est-ce qui est variable) s'écrit dans
+      une **carte** JSON relisible (`cartes/*.json` : littéral → nom,
+      occurrences ciblables), l'instrument l'applique en recollant les runs ;
+      entrée sans capture = refus code 2. Éprouvé sur
+      `Contrat de prestation.docx` (21 entrées, dont une double espace dans
+      « 17 Avril  2026 » que le refus a nommée) : chaîne carte → balisage →
+      conversion → rendu, données du contrat d'origine purgées, PDF vérifié à
+      l'œil. Sert aussi à re-baliser mieux un modèle déjà paramétré.
 
 **Critère d'acceptation atteint** : docxtpl produit une PTF complète à partir du
 modèle sans qu'aucune mise en page ne soit régénérée (préservation à l'octet

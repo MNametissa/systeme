@@ -314,7 +314,67 @@ if r.returncode != 2:
     echec("refus du vide", f"code {r.returncode} au lieu de 2")
 ok("refus du vide: 0 marqueur → code 2")
 
-# ── 9. Le rendu se convertit en PDF (LibreOffice) ─────────────────────────
+# ── 12. Baliser : document nu + carte → gabarit moustache ─────────────────
+BALISE = RACINE / "instruments" / "baliser_gabarit.py"
+nu = tmp / "document-nu.docx"
+d = docx.Document()
+p = d.add_paragraph()
+p.add_run("Contrat avec ")
+p.add_run("ACME")            # littéral fragmenté entre runs, comme Word le fait
+p.add_run(" SARL, signé le 5 mai. Paiement le 5 mai.")
+d.save(str(nu))
+carte = tmp / "carte.json"
+carte.write_text(json.dumps([
+    {"texte": "ACME SARL", "nom": "client_name"},
+    {"texte": "5 mai", "nom": "date_paiement", "occurrences": [2]},
+]))
+r = subprocess.run([sys.executable, str(BALISE), str(nu), str(tmp / "balise.docx"),
+                    "--carte", str(carte)], capture_output=True, text=True)
+if r.returncode != 0:
+    echec("balisage", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+txt_b = textes_docx(tmp / "balise.docx")["word/document.xml"]
+if "{client_name}" not in txt_b:
+    echec("balisage", f"littéral fragmenté non balisé : {txt_b!r}")
+if "signé le 5 mai" not in txt_b or "Paiement le {date_paiement}" not in txt_b:
+    echec("balisage: occurrences", f"restriction d'occurrence ignorée : {txt_b!r}")
+ok("balisage: littéral fragmenté balisé, occurrence ciblée respectée")
+
+carte_vide = tmp / "carte-vide.json"
+carte_vide.write_text(json.dumps([{"texte": "TEXTE ABSENT DU DOCUMENT", "nom": "x"}]))
+r = subprocess.run([sys.executable, str(BALISE), str(nu), str(tmp / "b2.docx"),
+                    "--carte", str(carte_vide)], capture_output=True, text=True)
+if r.returncode != 2 or "TEXTE ABSENT" not in r.stdout:
+    echec("balisage: refus du vide", f"code {r.returncode}, sortie : {r.stdout!r}")
+ok("balisage: entrée sans capture → code 2, nommée dans la sortie")
+
+# ── 13. Chaîne complète sur le vrai Contrat de prestation ─────────────────
+CARTE_CP = RACINE / "cartes" / "contrat-prestation.json"
+src_cp = DEPOT / "Modèles de docx" / "Contrat de prestation.docx"
+r = subprocess.run([sys.executable, str(BALISE), str(src_cp), str(tmp / "cp-balise.docx"),
+                    "--carte", str(CARTE_CP)], capture_output=True, text=True)
+if r.returncode != 0:
+    echec("prestation: balisage", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+r = subprocess.run([sys.executable, str(INSTRUMENT), str(tmp / "cp-balise.docx"),
+                    str(tmp / "cp-gabarit.docx")], capture_output=True, text=True)
+if r.returncode != 0:
+    echec("prestation: conversion", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+ctx_cp = {"contract_number": "CTR00099", "contract_date": "02/09/2026",
+          "client_name": "M. ONANA", "client_company_name": "NKOULOU SARL",
+          "project_name": "Refonte du portail RH", "total_amount_num": "1 200 000",
+          "total_amount_text": "Un million deux cent mille"}
+dcp = DocxTemplate(str(tmp / "cp-gabarit.docx"))
+dcp.render(ctx_cp)
+dcp.save(str(tmp / "cp-rendu.docx"))
+txt_cp = textes_docx(tmp / "cp-rendu.docx")["word/document.xml"]
+for attendu in ["CTR00099", "NKOULOU SARL", "Refonte du portail RH", "1 200 000"]:
+    if attendu not in txt_cp:
+        echec("prestation: rendu", f"valeur absente : {attendu}")
+for interdit in ["CTR00005", "M. AZEBAZE", "750 000", "Globalys"]:
+    if interdit in txt_cp:
+        echec("prestation: rendu", f"donnée du contrat d'origine encore présente : {interdit}")
+ok("prestation: chaîne carte → balisage → conversion → rendu, données d'origine purgées")
+
+# ── 14. Le rendu se convertit en PDF (LibreOffice) ─────────────────────────
 r = subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf",
                     "--outdir", str(tmp), str(rendu)],
                    capture_output=True, text=True, timeout=120)
