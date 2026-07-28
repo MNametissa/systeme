@@ -68,21 +68,32 @@ dépôt, avec sa sortie citée ; chaque script jeté a une ligne qui dit pourquo
 
 ---
 
-## T1 — Le `.docx` de PTF *(à faire par Marcel, pas par une session)*
+## T1 — Le `.docx` de PTF — **FAIT (2026-07-28)**
 
-Le seul défaut qui rend la machine de rédaction inutilisable pour son cas d'usage
-principal (R10). Son propre README le dit : aucun skill ne remplacera ce fichier.
+Marcel a livré 8 modèles réels dans `Modèles de docx/` (PTF, contrats, CDC,
+cahier de conception), la PTF déjà à moitié templatisée en syntaxe moustache
+(`{var}`, `{#boucle}{/boucle}`). Le reste est fait par instruments dans
+`machine-redaction/` :
 
-- [ ] Prendre une PTF réellement envoyée, la copier, vider le contenu variable
-- [ ] Nommer les styles : Titre 1, Titre 2, Corps, Tableau chiffrage
-      (c'est ce que le skill `docx` lit ; sans styles nommés, il reconstruit)
-- [ ] Garder page de garde, en-têtes, pieds de page, mentions légales
-- [ ] Remplacer les valeurs par `{{ client }}`, `{{ montant_ht }}`, `{{ date }}`…
-- [ ] Déposer dans `machine-redaction/templates/` sous `ptf-standard.docx`
-- [ ] Refaire le même geste pour `devis.docx` si la structure diffère
+- [x] `instruments/convertir_gabarit.py` — moustache → docxtpl : 35 marqueurs,
+      2 boucles de tableau (`{%tr %}`), 2 de paragraphe (`{%p %}`), planning
+      6 lignes en dur → 1 ligne bouclée à grille vierge. Seule `document.xml`
+      est réécrite : 14 parties (styles, en-têtes, médias) identiques à l'octet.
+- [x] `templates/ptf-standard.docx` déposé, rendu éprouvé sur contexte 7 phases
+      (le 6 codé en dur déborde), PDF LibreOffice vérifié à l'œil.
+- [x] **Contenu libre prouvé** : une variable reçoit un sous-document entier
+      (sections nées au rendu, styles nommés hérités) — le gabarit est une
+      coque, pas un formulaire.
+- [x] `instruments/decouper_gabarit.py` — gabarit partiel (couverture +
+      en-têtes/pieds seuls), purge des rels d'images et médias orphelins
+      (1 média gardé sur 7), refus code 2 si ancre introuvable.
+- [x] Porte : `test/run.py`, 16 vérifications sur la vraie PTF.
+- [ ] Refaire le geste pour les 7 autres modèles (contrats, CDC…) — l'instrument
+      est générique, il manque leurs marqueurs moustache dans les sources.
 
-**Critère d'acceptation** : `template-engine` produit une PTF complète à partir du
-modèle sans qu'aucune mise en page ne soit régénérée.
+**Critère d'acceptation atteint** : docxtpl produit une PTF complète à partir du
+modèle sans qu'aucune mise en page ne soit régénérée (préservation à l'octet
+vérifiée par la porte). Dépendances nouvelles pour T3 : `docxtpl`, `docxcompose`.
 
 ---
 

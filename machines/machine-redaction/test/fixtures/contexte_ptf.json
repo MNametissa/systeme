@@ -1,0 +1,41 @@
+{
+  "client_name": "ACME SARL",
+  "project_title": "Déploiement ERP Odoo",
+  "date": "28 juillet 2026",
+  "total_amount_text": "douze millions cinq cent mille",
+  "total_amount_num": "12 500 000",
+  "context_description": "ACME SARL souhaite unifier la gestion de ses achats, ventes et stocks dans un système intégré.",
+  "employee_count": "45",
+  "city": "Douala",
+  "functional_needs": [
+    { "need_title": "Gestion des achats", "need_description": "demandes, bons de commande, réceptions" },
+    { "need_title": "Gestion des ventes", "need_description": "devis, commandes, facturation" },
+    { "need_title": "Gestion des stocks", "need_description": "entrepôts, inventaires, traçabilité" }
+  ],
+  "solution_name": "Odoo 17 Community",
+  "solution_description": "ERP modulaire open source couvrant achats, ventes, stocks et comptabilité.",
+  "project_phases": [
+    { "phase_number": "1", "phase_title": "Analyse et Conception", "phase_details": "Ateliers de cadrage et spécifications." },
+    { "phase_number": "2", "phase_title": "Configurations Standards", "phase_details": "Paramétrage des modules de base." },
+    { "phase_number": "3", "phase_title": "Configurations des accès", "phase_details": "Rôles, droits et sécurité." },
+    { "phase_number": "4", "phase_title": "Développements Spécifiques", "phase_details": "Modules sur mesure." },
+    { "phase_number": "5", "phase_title": "Paramétrage des données", "phase_details": "Reprise des données d'exploitation." },
+    { "phase_number": "6", "phase_title": "Déploiement et formation", "phase_details": "Mise en production et formation." },
+    { "phase_number": "7", "phase_title": "Accompagnement", "phase_details": "Suivi post-déploiement et optimisation." }
+  ],
+  "financial_table": [
+    { "phase_name": "Phase 1", "deliverable": "Dossier de spécifications", "cost": "1 500 000" },
+    { "phase_name": "Phase 2", "deliverable": "Modules standards configurés", "cost": "2 000 000" },
+    { "phase_name": "Phase 3", "deliverable": "Matrice des accès", "cost": "800 000" },
+    { "phase_name": "Phase 4", "deliverable": "Modules spécifiques livrés", "cost": "4 200 000" },
+    { "phase_name": "Phase 5", "deliverable": "Données reprises et validées", "cost": "1 200 000" },
+    { "phase_name": "Phase 6", "deliverable": "Système en production", "cost": "1 800 000" },
+    { "phase_name": "Phase 7", "deliverable": "Rapport d'optimisation", "cost": "1 000 000" }
+  ],
+  "team_table": [
+    { "profile": "Chef de projet", "role": "Pilotage et coordination", "count": "1" },
+    { "profile": "Consultant fonctionnel", "role": "Analyse et paramétrage", "count": "2" },
+    { "profile": "Développeur Odoo", "role": "Développements spécifiques", "count": "2" },
+    { "profile": "Formateur", "role": "Formation des utilisateurs", "count": "1" }
+  ]
+}
