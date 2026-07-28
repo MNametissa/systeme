@@ -201,7 +201,22 @@ PATH vide et templates absents, refus nommés dans les deux cas).
 
 ---
 
-## T4 — Numéroter les affirmations (`AF-xxx`)
+## T4 — Numéroter les affirmations (`AF-xxx`) — **FAIT, en plus fort (2026-07-28)**
+
+Réalisé mécaniquement plutôt qu'en convention de prose :
+`instruments/af_contexte.py` — le registre AF vit dans la base de faits
+(`_af` : id, chemin avec motifs `[*]`, source) ; l'instrument énumère toute
+feuille chiffrée du contexte, delta (feuille sans AF) = code 1, entrée AF qui
+ne couvre rien = code 2. `remplir_gabarit` **refuse de rendre** une base de
+faits non sourcée. La relecture à froid est au skill (§ opposable : le
+relecteur sans contexte reçoit livrable + registre et nomme les AF non
+déductibles — une liste d'IDs, pas un avis). Porte : 4 vérifications dédiées.
+Au passage : **vrai sommaire** — champ TOC rafraîchi via UNO au PDF
+(`pdf_livrable.py`), `updateFields` posé dans le docx, style Heading3 restauré
+sur les phases de la source PTF (le cache du sommaire d'origine prouvait
+qu'il existait avant balisage).
+
+*(Texte d'origine conservé ci-dessous pour mémoire.)*
 
 Rend la relecture §3 opposable au lieu d'impressionniste. Transposition directe de
 ce qui a marché sur la tranche B : les `FR-001` numérotés ont permis à l'audit

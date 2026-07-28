@@ -23,15 +23,27 @@ cd "$MACHINE"   # README.md = référence complète des six gestes
 3. `python3 instruments/variables_gabarit.py <gabarit>` — le contrat d'entrée.
 4. Construire le contexte JSON depuis la base de faits. **Aucun montant, date,
    délai ou effectif inventé ou arrondi** : chaque valeur vient de
-   l'utilisateur ou d'un document fourni ; ce qui manque se demande.
+   l'utilisateur ou d'un document fourni ; ce qui manque se demande. Chaque
+   valeur chiffrée se source dans `_af` (`AF-xxx : chemin → source`,
+   contrôlé par `instruments/af_contexte.py`) — un contexte non sourcé ne
+   se rend pas.
 5. `python3 instruments/remplir_gabarit.py <gabarit> <contexte.json>
-   livrables/<client>-<type>-<AAAAMMJJ>.docx` — un refus se corrige,
-   ne se contourne jamais.
+   livrables/<client>-<type>-<AAAAMMJJ>.docx` — sort docx + pdf (sommaire
+   rafraîchi) ; un refus se corrige, ne se contourne jamais.
 6. `python3 instruments/verif_livrable.py <sortie>` — juger chaque chiffre
    énuméré : source citée, ou le document ne part pas.
 
 Sections nouvelles ou contenu hors gabarit : sous-document docxtpl
 (README § Contenu libre) — jamais de mise en page reconstruite à la main.
+
+## Relecture à froid — opposable
+
+Avant l'envoi d'un livrable à enjeu : donner le PDF seul (sans contexte ni
+conversation) à une session neuve — « que comprends-tu du besoin, du périmètre
+et du prix ? » — puis lui remettre le registre AF (`af_contexte.py`) et
+demander **quels AF ne sont pas déductibles du document**. La réponse est une
+liste d'IDs, pas un avis. Un AF non déductible = le document ne le porte pas :
+corriger le document ou la base de faits.
 
 ## Créer ou améliorer un gabarit
 

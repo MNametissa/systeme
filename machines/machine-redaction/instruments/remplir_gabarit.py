@@ -13,7 +13,6 @@ Après rendu, zéro résidu de gabarit toléré dans la sortie.
 """
 import json
 import re
-import subprocess
 import sys
 import zipfile
 from pathlib import Path
@@ -21,6 +20,8 @@ from pathlib import Path
 from docxtpl import DocxTemplate
 from jinja2 import Environment, StrictUndefined
 
+from af_contexte import controler as controler_af
+from pdf_livrable import convertir as convertir_pdf
 from variables_gabarit import variables_de
 
 RESIDU = re.compile(r"\{\{|\{%|\{[#/]?[a-z_0-9]+(?:\.[a-z_0-9]+)*\}")
@@ -47,6 +48,16 @@ def main():
         print("rien n'a été rendu ni écrit")
         return 1
 
+    _, non_sources, af_mortes, nb_feuilles = controler_af(contexte)
+    if nb_feuilles and (non_sources or af_mortes):
+        for chemin, v in non_sources:
+            print(f"ÉCHEC — valeur chiffrée sans AF : {chemin} = {v!r}")
+        for e in af_mortes:
+            print(f"ÉCHEC — {e['id']} ne couvre aucune feuille : {e['chemin']!r}")
+        print("la base de faits se source (_af), elle ne se rend pas telle quelle "
+              "— voir af_contexte.py")
+        return 1
+
     doc = DocxTemplate(str(gabarit))
     try:
         doc.render(contexte, jinja_env=Environment(undefined=StrictUndefined))
@@ -70,12 +81,23 @@ def main():
                           "sortie supprimée")
                     return 1
 
-    r = subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf",
-                        "--outdir", str(sortie.parent), str(sortie)],
-                       capture_output=True, text=True, timeout=120)
-    if r.returncode != 0 or not pdf.exists() or pdf.stat().st_size == 0:
+    # Word actualisera les champs (sommaire) à l'ouverture du docx
+    with zipfile.ZipFile(sortie) as zin:
+        membres = {i.filename: zin.read(i.filename) for i in zin.infolist()}
+        infos = zin.infolist()
+    reglages = membres["word/settings.xml"].decode("utf-8")
+    if "w:updateFields" not in reglages:
+        reglages = re.sub(r"(<w:settings[^>]*>)",
+                          r'\1<w:updateFields w:val="true"/>', reglages, count=1)
+        membres["word/settings.xml"] = reglages.encode("utf-8")
+        with zipfile.ZipFile(sortie, "w", zipfile.ZIP_DEFLATED) as zout:
+            for item in infos:
+                zout.writestr(item, membres[item.filename])
+
+    erreur = convertir_pdf(sortie, pdf)
+    if erreur:
         sortie.unlink()
-        print(f"ÉCHEC — conversion PDF : code {r.returncode}\n{r.stderr}")
+        print(f"ÉCHEC — conversion PDF : {erreur}")
         print("le docx a été supprimé : le livrable sort en deux formats ou pas du tout")
         return 1
 

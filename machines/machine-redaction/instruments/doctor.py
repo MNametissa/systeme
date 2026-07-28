@@ -18,6 +18,7 @@ REQUIS_MODULES = [
     ("docx", "pip3 install --user --break-system-packages docxtpl  # fournit python-docx"),
     ("jinja2", "pip3 install --user --break-system-packages docxtpl  # fournit jinja2"),
     ("docxcompose", "pip3 install --user --break-system-packages docxcompose"),
+    ("uno", "apt install python3-uno  # rafraîchit le sommaire au PDF"),
 ]
 REQUIS_BINAIRES = [
     ("libreoffice", "apt install libreoffice"),

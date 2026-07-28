@@ -419,6 +419,18 @@ if not pdf_livrable.exists() or pdf_livrable.stat().st_size < 10000:
     echec("remplir: pdf", "le livrable doit sortir en docx ET en pdf")
 ok("remplir: livrable produit en rendu strict, docx et pdf")
 
+reglages = octets(livrable, "word/settings.xml").decode("utf-8")
+if "w:updateFields" not in reglages:
+    echec("remplir: sommaire", "updateFields absent du docx — Word n'actualisera pas les champs")
+r = subprocess.run(["pdftotext", "-f", "2", "-l", "2", str(pdf_livrable), "-"],
+                   capture_output=True, text=True)
+if "Développements Spécifiques" not in r.stdout:
+    echec("remplir: sommaire", "le sommaire du PDF ne reflète pas le contenu réel "
+          f"(phase 4 de la fixture absente de la page 2) :\n{r.stdout[:300]}")
+if "Modules Spécifiques" in r.stdout:
+    echec("remplir: sommaire", "le sommaire du PDF contient encore le cache périmé d'origine")
+ok("remplir: sommaire réel — champs TOC rafraîchis, phases présentes, cache purgé")
+
 r = subprocess.run([sys.executable, str(REMPLIR), str(gabarit), str(ctx_file),
                     str(livrable)], capture_output=True, text=True)
 if r.returncode == 0 or "écras" not in r.stdout.lower():
@@ -524,6 +536,44 @@ lien = faux_home / ".claude-mecid" / "skills" / "machine-redaction"
 if not lien.is_symlink() or not (lien / "SKILL.md").read_text() == skill_txt:
     echec("install", "lien absent du bon profil ou contenu divergent")
 ok("install: lien symbolique au bon profil (~/.claude-mecid/skills), idempotent")
+
+# ── 20. AF-xxx : chaque valeur chiffrée de la base de faits a une source ──
+AF = RACINE / "instruments" / "af_contexte.py"
+r = subprocess.run([sys.executable, str(AF), str(ctx_file)],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    echec("af", f"code {r.returncode} sur un contexte sourcé\n{r.stdout}{r.stderr}")
+if "AF-004" not in r.stdout or "somme des coûts" not in r.stdout:
+    echec("af: registre", f"registre AF absent de la sortie :\n{r.stdout[:300]}")
+ok("af: contexte sourcé → code 0, registre AF imprimé")
+
+ctx_sans_af = {k: v for k, v in contexte.items() if k != "_af"}
+f_sans_af = tmp / "ctx-sans-af.json"
+f_sans_af.write_text(json.dumps(ctx_sans_af))
+r = subprocess.run([sys.executable, str(AF), str(f_sans_af)],
+                   capture_output=True, text=True)
+if r.returncode != 1 or "employee_count" not in r.stdout:
+    echec("af: delta", f"code {r.returncode}, valeur non sourcée non nommée :\n{r.stdout[:300]}")
+ok("af: valeur chiffrée sans source → code 1, chemin nommé")
+
+ctx_af_morte = dict(contexte)
+ctx_af_morte["_af"] = contexte["_af"] + [
+    {"id": "AF-099", "chemin": "chemin.inexistant", "source": "rien"}]
+f_morte = tmp / "ctx-af-morte.json"
+f_morte.write_text(json.dumps(ctx_af_morte))
+r = subprocess.run([sys.executable, str(AF), str(f_morte)],
+                   capture_output=True, text=True)
+if r.returncode != 2 or "AF-099" not in r.stdout:
+    echec("af: entrée morte", f"code {r.returncode}\n{r.stdout[:300]}")
+ok("af: entrée AF qui ne couvre rien → code 2, nommée")
+
+sortie_af = tmp / "livrable-sans-af.docx"
+r = subprocess.run([sys.executable, str(REMPLIR), str(gabarit), str(f_sans_af),
+                    str(sortie_af)], capture_output=True, text=True)
+if r.returncode == 0 or "AF" not in r.stdout or sortie_af.exists():
+    echec("remplir: base de faits non sourcée",
+          f"code {r.returncode}, fichier créé : {sortie_af.exists()}\n{r.stdout[:300]}")
+ok("remplir: base de faits non sourcée → refus, rien n'est écrit")
 
 # ── 14. Le rendu se convertit en PDF (LibreOffice) ─────────────────────────
 r = subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf",

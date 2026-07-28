@@ -1,4 +1,14 @@
 {
+  "_af": [
+    { "id": "AF-001", "chemin": "date", "source": "date de rédaction — fixture de test" },
+    { "id": "AF-002", "chemin": "employee_count", "source": "effectif déclaré par le client — fixture de test" },
+    { "id": "AF-003", "chemin": "solution_name", "source": "version Odoo retenue — fixture de test" },
+    { "id": "AF-004", "chemin": "total_amount_num", "source": "somme des coûts du tableau financier" },
+    { "id": "AF-005", "chemin": "project_phases[*].phase_number", "source": "numérotation séquentielle des phases" },
+    { "id": "AF-006", "chemin": "financial_table[*].phase_name", "source": "renvoi aux phases du projet" },
+    { "id": "AF-007", "chemin": "financial_table[*].cost", "source": "chiffrage par phase — fixture de test" },
+    { "id": "AF-008", "chemin": "team_table[*].count", "source": "staffing par profil — fixture de test" }
+  ],
   "client_name": "ACME SARL",
   "project_title": "Déploiement ERP Odoo",
   "date": "28 juillet 2026",
