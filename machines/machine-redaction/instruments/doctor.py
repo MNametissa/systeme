@@ -81,6 +81,13 @@ def main():
         else:
             ligne("SIGNALÉ", f"{binaire} absent ({usage})", remede)
 
+    skill = Path.home() / ".claude-mecid" / "skills" / "machine-redaction"
+    if (skill / "SKILL.md").exists():
+        ligne("OK", "skill de session (profil ~/.claude-mecid/skills)")
+    else:
+        ligne("SIGNALÉ", "skill de session non installé — les sessions ne "
+              "trouveront pas la machine", "bash install.sh")
+
     if MAUVAIS_PROFIL.is_dir():
         egares = sorted(ANCIENS_SKILLS & {p.name for p in MAUVAIS_PROFIL.iterdir()})
         if egares:

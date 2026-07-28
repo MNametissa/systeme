@@ -73,8 +73,20 @@ contrat-sous-traitance, modele-cdc.
 ## Porte
 
 ```bash
-python3 test/run.py   # 40 vérifications sur les 8 modèles réels, échec = code 1
+python3 test/run.py   # 42 vérifications sur les 8 modèles réels, échec = code 1
 ```
+
+## Installation — câblage en session
+
+```bash
+bash install.sh   # lien symbolique du skill vers ~/.claude-mecid/skills
+                  # (copie canonique unique, idempotent), puis doctor
+```
+
+Le skill (`skill/SKILL.md`) est mince : il route les demandes de documents
+client (PTF, contrats, CDC…) vers les six gestes et rappelle les deux règles
+dures — aucun chiffre inventé, un refus d'instrument se corrige, ne se
+contourne pas. Tout le reste vit dans ce README et les instruments.
 
 ## Doctor — la machine sait dire qu'elle est cassée
 

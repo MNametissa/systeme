@@ -282,6 +282,16 @@ nommait rien. 42 tests verts.
 
 ## T6 — Câblage et périmètres (à trancher, pas à coder)
 
+- [x] **Rédaction câblée en session (2026-07-28)** — `skill/SKILL.md` mince
+      (frontmatter 3 lignes, leçon R6 ; description resserrée sur les documents
+      client, leçon R4 ; « PAS pour la rédaction libre ») installé par
+      `install.sh` en **lien symbolique** vers le dépôt (copie canonique
+      unique, ne dérive pas — contrairement à la copie design-machine),
+      bon profil `~/.claude-mecid/skills` (R9), idempotent. La porte vérifie :
+      frontmatter mince, zéro référence morte vers les instruments (leçon
+      R11), double installation sans dérive. Le doctor signale un skill non
+      installé. Chargé et visible en session dès l'installation.
+
 - [x] **D5** — porte design câblée en `Stop` (snippet + hook mis à jour, D-030)
 - [ ] **D4** — décider si le contraste entre dans `dm gate` ou reste chez
       AccessLint. En l'état, la porte bénit un contrat illisible.

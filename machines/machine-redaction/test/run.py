@@ -486,6 +486,42 @@ if r.returncode == 0 or "templates" not in r.stdout:
     echec("doctor: templates vides", f"code {r.returncode}\n{r.stdout}")
 ok("doctor: templates/ vide → code 1, la machine refuse de passer pour installée")
 
+# ── 19. Câblage : skill mince + installation idempotente au bon profil ────
+SKILL = RACINE / "skill" / "SKILL.md"
+if not SKILL.exists():
+    echec("skill", "skill/SKILL.md absent")
+skill_txt = SKILL.read_text()
+fm = re.match(r"---\n(.*?)\n---\n", skill_txt, re.S)
+if not fm or "name: machine-redaction" not in fm.group(1) \
+        or "description:" not in fm.group(1):
+    echec("skill", "frontmatter sans name/description")
+if len(fm.group(1).splitlines()) > 10:
+    echec("skill", f"frontmatter obèse ({len(fm.group(1).splitlines())} lignes) — "
+          "leçon R6 : coût de contexte permanent")
+refs = set(re.findall(r"instruments/([a-z_]+\.py)", skill_txt))
+if not refs:
+    echec("skill", "le corps ne référence aucun instrument")
+for ref in refs:
+    if not (RACINE / "instruments" / ref).exists():
+        echec("skill", f"référence morte (leçon R11) : instruments/{ref}")
+ok(f"skill: frontmatter mince, {len(refs)} instruments référencés, zéro référence morte")
+
+faux_home = tmp / "home"
+faux_home.mkdir()
+import site
+env_home = dict(os.environ, HOME=str(faux_home),
+                PYTHONPATH=site.getusersitepackages())   # les modules pip --user
+                                                         # suivent HOME : on les garde
+for passage in (1, 2):    # deux passages : l'installation doit être idempotente
+    r = subprocess.run(["bash", str(RACINE / "install.sh")],
+                       capture_output=True, text=True, env=env_home)
+    if r.returncode != 0:
+        echec("install", f"passage {passage} : code {r.returncode}\n{r.stdout}{r.stderr}")
+lien = faux_home / ".claude-mecid" / "skills" / "machine-redaction"
+if not lien.is_symlink() or not (lien / "SKILL.md").read_text() == skill_txt:
+    echec("install", "lien absent du bon profil ou contenu divergent")
+ok("install: lien symbolique au bon profil (~/.claude-mecid/skills), idempotent")
+
 # ── 14. Le rendu se convertit en PDF (LibreOffice) ─────────────────────────
 r = subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf",
                     "--outdir", str(tmp), str(rendu)],
