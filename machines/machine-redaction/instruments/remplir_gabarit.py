@@ -13,6 +13,7 @@ Après rendu, zéro résidu de gabarit toléré dans la sortie.
 """
 import json
 import re
+import subprocess
 import sys
 import zipfile
 from pathlib import Path
@@ -31,10 +32,12 @@ def main():
         return 1
     gabarit, ctx_path, sortie = Path(sys.argv[1]), Path(sys.argv[2]), Path(sys.argv[3])
 
-    if sortie.exists():
-        print(f"ÉCHEC — {sortie} existe déjà : on n'écrase jamais une version "
-              "produite. Changer le nom (ou dater la sortie).")
-        return 1
+    pdf = sortie.with_suffix(".pdf")
+    for existant in (sortie, pdf):
+        if existant.exists():
+            print(f"ÉCHEC — {existant} existe déjà : on n'écrase jamais une "
+                  "version produite. Changer le nom (ou dater la sortie).")
+            return 1
 
     contexte = json.loads(ctx_path.read_text())
     manquantes = [v for v in variables_de(gabarit) if v not in contexte]
@@ -67,7 +70,16 @@ def main():
                           "sortie supprimée")
                     return 1
 
-    print(f"livrable produit : {sortie}")
+    r = subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf",
+                        "--outdir", str(sortie.parent), str(sortie)],
+                       capture_output=True, text=True, timeout=120)
+    if r.returncode != 0 or not pdf.exists() or pdf.stat().st_size == 0:
+        sortie.unlink()
+        print(f"ÉCHEC — conversion PDF : code {r.returncode}\n{r.stderr}")
+        print("le docx a été supprimé : le livrable sort en deux formats ou pas du tout")
+        return 1
+
+    print(f"livrable produit : {sortie} + {pdf.name}")
     print(f"  {len(contexte)} clés de contexte, rendu strict, zéro résidu")
     print(f"  reste à faire : verif_livrable.py {sortie}")
     return 0

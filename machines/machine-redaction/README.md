@@ -27,7 +27,8 @@ python3 instruments/decouper_gabarit.py templates/ptf-standard.docx /tmp/couvert
 #    le contexte les couvre-t-il ? (manquante = code 1)
 python3 instruments/variables_gabarit.py templates/ptf-standard.docx --contexte contexte.json
 
-# 4. Remplir — trois gardes : jamais d'écrasement, variable manquante = refus
+# 4. Remplir — sort le livrable en docx ET pdf ; trois gardes : jamais
+#    d'écrasement (des deux formats), variable manquante = refus
 #    avant rendu, StrictUndefined (un attribut profond absent lève au lieu de
 #    laisser un blanc silencieux), zéro résidu dans la sortie
 python3 instruments/remplir_gabarit.py templates/ptf-standard.docx contexte.json livrables/acme-ptf-20260728.docx

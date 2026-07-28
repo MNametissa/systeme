@@ -414,7 +414,10 @@ if r.returncode != 0 or not livrable.exists():
     echec("remplir", f"code {r.returncode}\n{r.stdout}{r.stderr}")
 if "ACME SARL" not in textes_docx(livrable)["word/document.xml"]:
     echec("remplir", "contexte absent du livrable")
-ok("remplir: livrable produit en rendu strict")
+pdf_livrable = livrable.with_suffix(".pdf")
+if not pdf_livrable.exists() or pdf_livrable.stat().st_size < 10000:
+    echec("remplir: pdf", "le livrable doit sortir en docx ET en pdf")
+ok("remplir: livrable produit en rendu strict, docx et pdf")
 
 r = subprocess.run([sys.executable, str(REMPLIR), str(gabarit), str(ctx_file),
                     str(livrable)], capture_output=True, text=True)
