@@ -118,6 +118,24 @@ vérifiée par la porte). Dépendances nouvelles pour T3 : `docxtpl`, `docxcompo
 Ferme R2 (les règles fortes sans mécanisme). Principe : l'instrument **énumère**,
 le modèle **juge**, le delta tranche. Aucun jugement dans le script.
 
+> **T2.b largement couvert le 2026-07-28**, avant T2.a (l'occasion a primé sur
+> l'ordre : le trou « docxtpl rend une variable absente comme chaîne vide, sans
+> erreur » rendait tout livrable suspect). Trois instruments dans
+> `machine-redaction/instruments/` :
+> - `variables_gabarit.py` — le contrat d'entrée : variables exigées énumérées
+>   (`get_undeclared_template_variables`), couverture du contexte vérifiée,
+>   manquante = code 1, gabarit sans variable = code 2 ;
+> - `remplir_gabarit.py` — production gardée : jamais d'écrasement (la règle
+>   « ne jamais écraser une version envoyée » a enfin un mécanisme), refus
+>   avant rendu si variable manquante, **StrictUndefined** (attribut profond
+>   absent → échec au rendu, pas un blanc), zéro résidu sinon sortie supprimée ;
+> - `verif_livrable.py` — porte de sortie : résidus bloquants, **population des
+>   chiffres** énumérée (position + contexte, 48 sur la PTF fixture — le modèle
+>   juge, le delta tranche), typographie française signalée (insécables).
+> Porte à 37 vérifications. Reste de T2.b : rien. Reste de T2 : T2.a (éprouver
+> les portes de la morgue — provenance, falsifiabilité, traçabilité — sur un
+> livrable réel), qui relève du fond, pas de la forme.
+
 > **Requalifié le 2026-07-27.** La morgue contient déjà 10 portes de documents
 > (`spec-forge/scripts/gates/`), dont trois qui portent exactement ce besoin :
 > `provenance-verifiable.py`, `falsifiabilite.py`, `tracabilite.py`. Écrire avant

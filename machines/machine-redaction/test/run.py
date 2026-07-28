@@ -374,6 +374,93 @@ for interdit in ["CTR00005", "M. AZEBAZE", "750 000", "Globalys"]:
         echec("prestation: rendu", f"donnée du contrat d'origine encore présente : {interdit}")
 ok("prestation: chaîne carte → balisage → conversion → rendu, données d'origine purgées")
 
+# ── 15. Le contrat gabarit ↔ contexte : variables énumérées et vérifiées ──
+VARIABLES = RACINE / "instruments" / "variables_gabarit.py"
+r = subprocess.run([sys.executable, str(VARIABLES), str(gabarit)],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    echec("variables", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+if "14 variables" not in r.stdout or "project_phases" not in r.stdout:
+    echec("variables: énumération", r.stdout)
+ok("variables: 14 variables du gabarit PTF énumérées")
+
+ctx_ampute = dict(contexte)
+del ctx_ampute["date"]
+ctx_file = tmp / "ctx-ampute.json"
+ctx_file.write_text(json.dumps(ctx_ampute))
+r = subprocess.run([sys.executable, str(VARIABLES), str(gabarit),
+                    "--contexte", str(ctx_file)], capture_output=True, text=True)
+if r.returncode != 1 or "date" not in r.stdout:
+    echec("variables: contexte incomplet", f"code {r.returncode}\n{r.stdout}")
+ctx_file.write_text(json.dumps(contexte))
+r = subprocess.run([sys.executable, str(VARIABLES), str(gabarit),
+                    "--contexte", str(ctx_file)], capture_output=True, text=True)
+if r.returncode != 0:
+    echec("variables: contexte complet refusé", r.stdout)
+ok("variables: variable manquante nommée (code 1), contexte complet accepté")
+
+r = subprocess.run([sys.executable, str(VARIABLES), str(vide)],
+                   capture_output=True, text=True)
+if r.returncode != 2:
+    echec("variables: refus du vide", f"code {r.returncode}")
+ok("variables: gabarit sans variable → code 2")
+
+# ── 16. Remplir : strict, sans résidu, sans écrasement ────────────────────
+REMPLIR = RACINE / "instruments" / "remplir_gabarit.py"
+livrable = tmp / "livrable-ptf.docx"
+r = subprocess.run([sys.executable, str(REMPLIR), str(gabarit), str(ctx_file),
+                    str(livrable)], capture_output=True, text=True)
+if r.returncode != 0 or not livrable.exists():
+    echec("remplir", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+if "ACME SARL" not in textes_docx(livrable)["word/document.xml"]:
+    echec("remplir", "contexte absent du livrable")
+ok("remplir: livrable produit en rendu strict")
+
+r = subprocess.run([sys.executable, str(REMPLIR), str(gabarit), str(ctx_file),
+                    str(livrable)], capture_output=True, text=True)
+if r.returncode == 0 or "écras" not in r.stdout.lower():
+    echec("remplir: écrasement", f"code {r.returncode}, sortie : {r.stdout!r}")
+ok("remplir: sortie existante → refus, jamais d'écrasement")
+
+ctx_file2 = tmp / "ctx-ampute2.json"
+ctx_file2.write_text(json.dumps(ctx_ampute))
+sortie2 = tmp / "livrable2.docx"
+r = subprocess.run([sys.executable, str(REMPLIR), str(gabarit), str(ctx_file2),
+                    str(sortie2)], capture_output=True, text=True)
+if r.returncode == 0 or "date" not in r.stdout or sortie2.exists():
+    echec("remplir: contexte incomplet", f"code {r.returncode}, fichier créé : {sortie2.exists()}")
+ok("remplir: variable manquante → refus avant tout rendu, rien n'est écrit")
+
+# ── 17. Vérifier le livrable : chiffres énumérés, résidus bloquants ───────
+VERIF = RACINE / "instruments" / "verif_livrable.py"
+r = subprocess.run([sys.executable, str(VERIF), str(livrable)],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    echec("verif", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+if "12 500 000" not in r.stdout or not re.search(r"\d+ chiffres? à sourcer", r.stdout):
+    echec("verif: chiffres", f"énumération absente :\n{r.stdout[:400]}")
+if "typographie" not in r.stdout.lower():
+    echec("verif: typographie", "aucun signalement typographique dans la sortie")
+ok("verif: chiffres énumérés avec décompte, typographie signalée")
+
+troue = tmp / "livrable-troue.docx"
+d = docx.Document()
+d.add_paragraph("Le montant est de {{ montant }} FCFA.")
+d.save(str(troue))
+r = subprocess.run([sys.executable, str(VERIF), str(troue)],
+                   capture_output=True, text=True)
+if r.returncode != 1 or "montant" not in r.stdout:
+    echec("verif: résidu", f"code {r.returncode}\n{r.stdout}")
+ok("verif: résidu de gabarit dans un livrable → code 1")
+
+vide2 = tmp / "livrable-vide.docx"
+docx.Document().save(str(vide2))
+r = subprocess.run([sys.executable, str(VERIF), str(vide2)],
+                   capture_output=True, text=True)
+if r.returncode != 2:
+    echec("verif: refus du vide", f"code {r.returncode}")
+ok("verif: livrable sans texte → code 2, jamais un OK muet")
+
 # ── 14. Le rendu se convertit en PDF (LibreOffice) ─────────────────────────
 r = subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf",
                     "--outdir", str(tmp), str(rendu)],

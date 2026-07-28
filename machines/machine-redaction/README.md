@@ -5,7 +5,7 @@ mise en page : le gabarit vient d'un vrai document envoyé, l'instrument le
 convertit, docxtpl le remplit. Le contenu peut différer d'un projet à l'autre —
 sections nouvelles comprises — sans toucher à la coque.
 
-## Les quatre gestes
+## Les six gestes
 
 ```bash
 # 0. Baliser un document nu (ou re-baliser mieux un modèle existant) :
@@ -23,15 +23,20 @@ python3 instruments/convertir_gabarit.py "../Modèles de docx/PTF - GINUTECH.doc
 # 2. Découper un gabarit partiel (ex. couverture + en-têtes/pieds seulement)
 python3 instruments/decouper_gabarit.py templates/ptf-standard.docx /tmp/couverture.docx --jusqua "Sommaire"
 
-# 3. Remplir
-python3 - << 'EOF'
-import json
-from docxtpl import DocxTemplate
-doc = DocxTemplate("templates/ptf-standard.docx")
-ctx = json.load(open("test/fixtures/contexte_ptf.json"))   # la base de faits
-doc.render(ctx)
-doc.save("ptf-client.docx")
-EOF
+# 3. Le contrat d'entrée : quelles variables ce gabarit exige-t-il,
+#    le contexte les couvre-t-il ? (manquante = code 1)
+python3 instruments/variables_gabarit.py templates/ptf-standard.docx --contexte contexte.json
+
+# 4. Remplir — trois gardes : jamais d'écrasement, variable manquante = refus
+#    avant rendu, StrictUndefined (un attribut profond absent lève au lieu de
+#    laisser un blanc silencieux), zéro résidu dans la sortie
+python3 instruments/remplir_gabarit.py templates/ptf-standard.docx contexte.json livrables/acme-ptf-20260728.docx
+
+# 5. Vérifier le livrable avant qu'il parte : résidus bloquants (code 1),
+#    chaque chiffre énuméré avec position et contexte (l'instrument énumère,
+#    le modèle juge chiffre par chiffre qu'une source existe),
+#    typographie française signalée (insécables)
+python3 instruments/verif_livrable.py livrables/acme-ptf-20260728.docx
 ```
 
 ## Contenu libre — le gabarit est une coque, pas un formulaire
@@ -68,7 +73,7 @@ contrat-sous-traitance, modele-cdc.
 ## Porte
 
 ```bash
-python3 test/run.py   # 28 vérifications sur les 8 modèles réels, échec = code 1
+python3 test/run.py   # 37 vérifications sur les 8 modèles réels, échec = code 1
 ```
 
 ## Dépendances
