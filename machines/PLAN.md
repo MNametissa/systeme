@@ -174,28 +174,30 @@ chiffres avec décompte, et bloque sur un `{{ }}` oublié et sur une collision d
 
 ---
 
-## T3 — `doctor` pour les deux machines
+## T3 — `doctor` pour les deux machines — **Rédaction FAIT (2026-07-28)**
 
 Ferme R7, R8, R9 et D8, D11 d'un coup. Une commande qui vérifie les préconditions
 et **échoue bruyamment** au lieu de laisser la machine s'installer cassée.
 
-- [ ] **Rédaction** : `markitdown`, `docxtpl`, `python-docx`, `python-pptx`,
-      `pandoc` présents ? (constat 2026-07-27 : les quatre premiers ABSENTS,
-      pandoc/openpyxl/libreoffice présents)
-- [ ] **Rédaction** : les 4 skills externes du routeur (`docx`, `xlsx`, `pdf`,
-      `doc-coauthoring`) sont-ils installés ? Sinon la moitié des chaînes pointent
-      dans le vide, aujourd'hui sans aucune détection
-- [ ] **Rédaction** : `templates/` non vide (sinon T1 n'est pas fait)
+- [x] **Rédaction** : `machine-redaction/instruments/doctor.py` — requis :
+      `docxtpl`, `python-docx`, `jinja2`, `docxcompose`, `libreoffice`,
+      `pdfinfo`, `templates/` non vide ; chaque absence sort avec sa commande
+      d'installation, code 1. Signalés : `pandoc`, porte absente, anciens
+      skills au mauvais profil (`~/.claude/skills`). Éprouvé dans la porte :
+      PATH amputé → libreoffice nommé ABSENT ; templates vides → refus.
+      La liste des requis a changé depuis le constat de 2026-07-27 : les six
+      gestes n'ont plus besoin de `markitdown`/`python-pptx` (ancienne
+      machine), ni des 4 skills marketplace du vieux routeur — R8 devient
+      sans objet pour la nouvelle machine.
 - [ ] **Design** : Chromium trouvable, `design-system/tokens.json` présent,
-      `impeccable` disponible ou explicitement absent
-- [ ] **Les deux** : skills posés dans le **bon profil** — le défaut est réel,
-      `~/.claude/skills` est codé en dur alors que les sessions tournent sur
-      `~/.claude-mecid/skills`
-- [ ] Sortie : liste `OK / ABSENT / À INSTALLER` + code de sortie non nul si un
-      élément requis manque
+      `impeccable` disponible ou explicitement absent — sa place naturelle
+      est `dm doctor`, pas ici
+- [ ] **Noyau** (N3) : outils des recettes (`vulture`, `madge`, `knip`,
+      `pylint`) — à traiter avec T8
 
 **Critère d'acceptation** : sur une machine neuve, `doctor` nomme exactement ce
-qui manque avant qu'un livrable échoue.
+qui manque avant qu'un livrable échoue. **Atteint pour Rédaction** (simulé :
+PATH vide et templates absents, refus nommés dans les deux cas).
 
 ---
 

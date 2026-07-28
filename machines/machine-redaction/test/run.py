@@ -461,6 +461,31 @@ if r.returncode != 2:
     echec("verif: refus du vide", f"code {r.returncode}")
 ok("verif: livrable sans texte → code 2, jamais un OK muet")
 
+# ── 18. doctor : la machine sait dire « je ne peux pas fonctionner ici » ──
+import os
+DOCTOR = RACINE / "instruments" / "doctor.py"
+r = subprocess.run([sys.executable, str(DOCTOR)], capture_output=True, text=True)
+if r.returncode != 0:
+    echec("doctor", f"code {r.returncode} sur une machine saine\n{r.stdout}{r.stderr}")
+for requis in ["docxtpl", "docxcompose", "libreoffice", "pdfinfo", "templates"]:
+    if not re.search(rf"OK\s+.*{requis}", r.stdout):
+        echec("doctor", f"requis non listé OK : {requis}\n{r.stdout}")
+ok("doctor: machine saine → code 0, chaque requis listé OK")
+
+env_ampute = dict(os.environ, PATH="/nonexistent")
+r = subprocess.run([sys.executable, str(DOCTOR)], capture_output=True, text=True,
+                   env=env_ampute)
+if r.returncode == 0 or not re.search(r"ABSENT\s+.*libreoffice", r.stdout) \
+        or "apt install" not in r.stdout:
+    echec("doctor: binaire absent", f"code {r.returncode}\n{r.stdout}")
+ok("doctor: binaire requis absent → code 1, commande d'installation donnée")
+
+r = subprocess.run([sys.executable, str(DOCTOR), "--racine", str(tmp)],
+                   capture_output=True, text=True)
+if r.returncode == 0 or "templates" not in r.stdout:
+    echec("doctor: templates vides", f"code {r.returncode}\n{r.stdout}")
+ok("doctor: templates/ vide → code 1, la machine refuse de passer pour installée")
+
 # ── 14. Le rendu se convertit en PDF (LibreOffice) ─────────────────────────
 r = subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf",
                     "--outdir", str(tmp), str(rendu)],

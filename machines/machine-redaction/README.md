@@ -73,10 +73,17 @@ contrat-sous-traitance, modele-cdc.
 ## Porte
 
 ```bash
-python3 test/run.py   # 37 vérifications sur les 8 modèles réels, échec = code 1
+python3 test/run.py   # 40 vérifications sur les 8 modèles réels, échec = code 1
 ```
 
-## Dépendances
+## Doctor — la machine sait dire qu'elle est cassée
 
-`docxtpl` et `docxcompose` (pip), `libreoffice` + `pdfinfo` pour la
-vérification PDF de la porte. À intégrer au `doctor` (T3).
+```bash
+python3 instruments/doctor.py   # OK/ABSENT/SIGNALÉ ; requis manquant = code 1
+```
+
+Requis : `docxtpl`, `python-docx`, `jinja2`, `docxcompose` (pip),
+`libreoffice`, `pdfinfo`, et `templates/` non vide. Chaque absence sort avec
+sa commande d'installation. Signalés sans bloquer : `pandoc`, porte absente,
+skills de l'ancien paquet posés au mauvais profil (`~/.claude/skills`).
+À lancer avant le premier geste sur une machine neuve.
