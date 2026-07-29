@@ -218,6 +218,16 @@ qu'il existait avant balisage).
 
 *(Texte d'origine conservé ci-dessous pour mémoire.)*
 
+**Finitions « rendu pro » (2026-07-29)**, toutes portées par la porte (49
+vérifications) : `mission_summary` variable (le « déploiement d'un ERP » en
+dur mentait sur tout projet non-ERP) ; `toiletter_gabarit.py` (espaces
+doubles, insécables, guillemets — 110 corrections sur les 8 sources, puis
+0 signalement typo sur le livrable) ; sommaire sans auto-entrée ; montants à
+droite, effectifs centrés, footer élargi, keepNext sur le titre de solution ;
+**Gantt rempli depuis la base de faits** (`debut`/`duree` par phase, sourcés
+AF, cellules `{% cellbg %}` — grille vierge si le contexte n'a pas de
+planning) ; bloc signature avec cachet posé côté GINUTECH.
+
 Rend la relecture §3 opposable au lieu d'impressionniste. Transposition directe de
 ce qui a marché sur la tranche B : les `FR-001` numérotés ont permis à l'audit
 d'opposer un scénario à une exigence précise, au lieu de « ça me semble flou ».

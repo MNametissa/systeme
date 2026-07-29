@@ -95,10 +95,13 @@ if residus:
 ok("rendu: zéro résidu {{ }} {% %} {moustache}")
 
 for attendu in ["ACME SARL", "12 500 000", "Accompagnement",
-                "Rapport d'optimisation", "Formateur"]:
+                "Rapport d'optimisation", "Formateur",
+                "Bon pour accord", "Steve FASSEU"]:
     if attendu not in corps:
         echec("rendu: contenu fixture absent", attendu)
-ok("rendu: valeurs du contexte présentes (dont la 7e phase)")
+if corps.count("ACME SARL") < 3:   # page de garde, tableau infos, signature
+    echec("rendu: signature", "le bloc signature ne porte pas le nom du client")
+ok("rendu: valeurs du contexte présentes (7e phase, bloc signature)")
 
 # ── 4. Les boucles débordent le 6 codé en dur ─────────────────────────────
 if corps.count("Dossier de spécifications") != 1:
@@ -114,12 +117,18 @@ if lignes_planning != 2 + 7:   # en-tête durée + en-tête semaines + 7 phases
 ok("boucles: 7 phases rendues (financier, prose, planning)")
 
 tbl_planning = xml_rendu[xml_rendu.rfind("<w:tbl>", 0, i):fin]
+vertes = 0
 for tr in re.findall(r"<w:tr[ >].*?</w:tr>", tbl_planning, re.S):
-    txt_tr = "".join(re.findall(r"<w:t[^>]*>([^<]*)</w:t>", tr))
-    if txt_tr.strip().startswith("Phase") and "339933" in tr:
-        echec("grille planning", f"ombrage Gantt hérité de la ligne modèle sur {txt_tr.strip()!r} "
-              "(la grille des semaines doit rester vierge, à cocher à la main)")
-ok("grille planning: semaines vierges sur les lignes bouclées")
+    txt_tr = "".join(re.findall(r"<w:t[^>]*>([^<]*)</w:t>", tr)).strip()
+    if txt_tr.startswith("Phase"):
+        n_tr = tr.count('w:fill="339933"')
+        vertes += n_tr
+        if txt_tr.startswith("Phase 1") and n_tr != 1:
+            echec("gantt", f"phase 1 (durée 1) : {n_tr} cellules ombrées au lieu de 1")
+if vertes != 9:   # somme des durées de la fixture (1+1+2+2+1+1+1)
+    echec("gantt", f"{vertes} cellules ombrées au lieu de 9 — le planning doit "
+          "se remplir depuis debut/duree de la base de faits")
+ok("gantt: 9 semaines ombrées depuis la base de faits, phase 1 correcte")
 
 # ── 5. Contenu libre : une variable reçoit un sous-document entier ────────
 # (le gabarit est une coque, pas un formulaire : des sections nouvelles
@@ -585,7 +594,11 @@ if i == -1:
 pPr_sol = xml_gab[xml_gab.rfind("<w:p ", 0, i):i]
 if "w:keepNext" not in pPr_sol:
     echec("finitions", "titre de solution orphelin possible (keepNext absent)")
-ok("finitions: montants à droite, effectifs centrés, footer élargi, titres solidaires")
+m = re.search(r'<wp:positionH relativeFrom="column">\s*<wp:posOffset>(\d+)</wp:posOffset>', xml_gab)
+if m and int(m.group(1)) > 2000000:
+    echec("finitions", f"cachet ancré à {m.group(1)} EMU — il chevauche la "
+          "colonne signature du client au lieu de couvrir celle de GINUTECH")
+ok("finitions: montants à droite, effectifs centrés, footer élargi, cachet côté GINUTECH")
 
 # ── 20. AF-xxx : chaque valeur chiffrée de la base de faits a une source ──
 AF = RACINE / "instruments" / "af_contexte.py"

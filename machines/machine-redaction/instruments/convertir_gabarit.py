@@ -185,11 +185,25 @@ def convertir_planning(body, compte):
         modele.addprevious(avant)
         modele.addnext(apres)
         poser_tag_unique(modele, "Phase {{ item.phase_number }}")
-        # la grille des semaines reste vierge : l'ombrage Gantt du document
-        # d'origine ne doit pas se répliquer sur chaque phase rendue
-        for tc in modele.findall(qn("w:tc"))[1:]:
+        # l'ombrage Gantt du document d'origine ne se réplique pas ; chaque
+        # cellule semaine s'ombre depuis debut/duree de la base de faits
+        # (grille vierge si le contexte ne fournit pas de planning)
+        for semaine, tc in enumerate(modele.findall(qn("w:tc"))[1:], start=1):
             for shd in tc.iter(qn("w:shd")):
                 shd.getparent().remove(shd)
+            condition = (f"'339933' if item.duree is defined and "
+                         f"item.debut <= {semaine} < item.debut + item.duree "
+                         f"else 'auto'")
+            ts = list(tc.iter(W_T))
+            if ts:
+                ts[0].text = f"{{% cellbg {condition} %}}"
+            else:
+                p = next(tc.iter(W_P))
+                r = p.makeelement(qn("w:r"), {})
+                t = p.makeelement(W_T, {})
+                t.text = f"{{% cellbg {condition} %}}"
+                r.append(t)
+                p.append(r)
         for tr in lignes[1:]:
             tr.getparent().remove(tr)
         compte["planning"] += len(lignes)
