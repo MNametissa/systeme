@@ -652,6 +652,60 @@ test('visualFromAggregates chiffre l intensite d une image sans l inventer', () 
 });
 
 
+// --- derivation clair <-> sombre ---
+
+const { hexToOklab, oklabToHex, invertPalette } = await import('../src/scheme.mjs');
+const { formatSchemeReport } = await import('../src/scheme.mjs');
+
+test('OKLab aller-retour restitue la couleur au pixel pres', () => {
+  for (const hex of ['#faf8f4', '#181614', '#ee1b2b', '#015c56', '#888888']) {
+    const back = oklabToHex(hexToOklab(hex));
+    const [a, b] = [parseInt(hex.slice(1), 16), parseInt(back.slice(1), 16)];
+    for (const shift of [16, 8, 0]) {
+      assert.ok(Math.abs(((a >> shift) & 255) - ((b >> shift) & 255)) <= 1, `${hex} → ${back}`);
+    }
+  }
+});
+
+test('invertPalette inverse les clartes et REPRODUIT chaque contraste', () => {
+  const { palette: sombre, report } = invertPalette({
+    background: '#faf8f4', surfaces: ['#ffffff'], ink: '#181614',
+    muted: '#787066', accents: ['#d46030']
+  });
+  assert.ok(hexToOklab(sombre.background).L < 0.2, `fond ${sombre.background} attendu sombre`);
+  assert.ok(hexToOklab(sombre.ink).L > 0.7, `encre ${sombre.ink} attendue claire`);
+  assert.equal(sombre.derived, true);
+  for (const r of report.filter(x => x.avant !== null)) {
+    assert.ok(Math.abs(r.apres - r.avant) <= Math.max(0.05 * r.avant, 0.1),
+      `${r.role} : contraste ${r.avant} → ${r.apres}`);
+  }
+  assert.ok(formatSchemeReport(report, 'SOMBRE').includes('contrastes reproduits'));
+});
+
+test('la double inversion revient au point de depart — le « parfaitement »', () => {
+  const clair = { background: '#faf8f4', surfaces: [], ink: '#181614', muted: '#787066', accents: ['#d46030'] };
+  const retour = invertPalette(invertPalette(clair).palette).palette;
+  // encre et attenue (hors zones degenerees) : retour au canal pres
+  for (const role of ['ink', 'muted']) {
+    const [a, b] = [parseInt(clair[role].slice(1), 16), parseInt(retour[role].slice(1), 16)];
+    for (const shift of [16, 8, 0]) {
+      const d = Math.abs(((a >> shift) & 255) - ((b >> shift) & 255));
+      assert.ok(d <= 12, `${role} : ${clair[role]} → ${retour[role]} (delta canal ${d})`);
+    }
+  }
+  // le fond frole le blanc absolu : la borne anti-degenerescence compresse,
+  // le retour se juge en clarte OKLab, pas au canal pres
+  const dL = Math.abs(hexToOklab(clair.background).L - hexToOklab(retour.background).L);
+  assert.ok(dL <= 0.12, `fond : ${clair.background} → ${retour.background} (delta L ${dL.toFixed(3)})`);
+  assert.ok(hexToOklab(retour.background).L > 0.8, 'le fond revient clair');
+});
+
+test('invertPalette preserve les suffixes alpha', () => {
+  const { palette: p } = invertPalette({ background: '#ffffff', surfaces: [], ink: '#000000 / 0.8', muted: null, accents: [] });
+  assert.ok(p.ink.endsWith(' / 0.8'), p.ink);
+});
+
+
 // --- doctor ---
 
 const { doctorExitCode, formatDoctor } = await import('../src/doctor.mjs');

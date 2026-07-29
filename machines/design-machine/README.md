@@ -44,8 +44,8 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test            # 63 tests sur les parties deterministes, sans navigateur
-npm run test:e2e    # 8 passes reelles Chromium sur fixtures locales, zero reseau
+npm test            # 67 tests sur les parties deterministes, sans navigateur
+npm run test:e2e    # 9 passes reelles Chromium sur fixtures locales, zero reseau
 dm doctor           # preconditions nommees : Node, Chromium, profil, options
 ```
 
@@ -248,6 +248,13 @@ dm merge --sources sources --map ...,paletteDark=A-dark
   clair et casse en sombre ferme la porte.
 - `dm verify --scheme dark` sans volet au contrat = REFUS explicite — juger un
   rendu sombre contre la palette claire produirait un verdict faux.
+- **Pas de source pour l'autre theme ?** `dm scheme dark` (ou `light`) DERIVE le
+  volet manquant : teinte et saturation conservees (OKLab), clartes inversees,
+  et chaque rapport de contraste WCAG reproduit par dichotomie — rapport de
+  fidelite imprime, ecart hors gamut avoue. Le volet est marque `derived`, sa
+  provenance le dit, et il n'ecrase jamais un volet MESURE sans `--force`.
+  Un derive n'est pas une mesure : si la source a un vrai theme oppose,
+  l'extraire vaut toujours mieux.
 
 ## Stacks non-web : Flutter, React Native, Electron, Ionic
 
@@ -298,8 +305,10 @@ Elles sont reelles, pas cosmetiques. A calibrer sur tes propres sources.
 - **Sans `--motion`, etat au repos uniquement.** Avec, le survol est mesure et
   les animations jouees sont lues — mais pas d'etat ouvert (menu, modale), et le
   mouvement rAF/canvas reste seulement detecte, jamais tokenise.
-- **Pas de conversion OKLCH.** Les couleurs sortent en hexadecimal sRGB. Si tu
-  veux raisonner en luminosite perceptuelle, la conversion reste a ecrire.
+- **Les tokens sortent en hexadecimal sRGB.** La conversion OKLab existe
+  (`src/scheme.mjs`, elle porte la derivation clair/sombre) mais les contrats
+  restent en hex — c'est ce que les navigateurs calculent et ce que la porte
+  compare.
 - **Le schema de couleurs est toujours force** — clair par defaut, sombre via
   `--scheme dark` — jamais herite de l'environnement : un Chromium sur une
   machine au theme sombre mesurait le sombre en croyant mesurer le clair.
@@ -335,7 +344,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            63 tests, sans navigateur ni Impeccable
+test/run.mjs            67 tests, sans navigateur ni Impeccable
 ```
 
 MIT.

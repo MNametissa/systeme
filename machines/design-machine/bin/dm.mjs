@@ -59,6 +59,12 @@ design-machine — extraire, composer, verifier
       Projette le contrat en natif : tokens.dart (Flutter), tokens.ts
       (React Native, Electron, Ionic). Derives, regeneres, jamais edites.
 
+  dm scheme <dark|light> [--force] [--master design-system/tokens.json]
+      Derive le volet manquant depuis l'autre : teinte/saturation conservees
+      (OKLab), clartes inversees, contrastes WCAG reproduits par dichotomie —
+      rapport de fidelite imprime, ecart hors gamut avoue. Le volet est marque
+      DERIVE ; un volet MESURE ne s'ecrase qu'avec --force.
+
   dm palette <image> [--label X --out sources/X.json] [--json]
       Une image (png/jpg/webp/gif) comme source de palette MESUREE : pixels
       quantifies, roles par regles (surface, contraste). Avec --label/--out,
@@ -255,6 +261,40 @@ async function main() {
     if (target === 'dart') { write(flag('out', 'design-system/tokens.dart'), renderDart(tokens)); return 0; }
     if (target === 'ts') { write(flag('out', 'design-system/tokens.ts'), renderTs(tokens)); return 0; }
     console.error(USAGE); return 2;
+  }
+
+  if (cmd === 'scheme') {
+    const sens = positional[0];
+    if (sens !== 'dark' && sens !== 'light') { console.error(USAGE); return 2; }
+    const masterPath = flag('master', 'design-system/tokens.json');
+    const tokens = JSON.parse(readFileSync(masterPath, 'utf8'));
+    const source = sens === 'dark' ? tokens.palette : tokens.paletteDark;
+    const cibleKey = sens === 'dark' ? 'paletteDark' : 'palette';
+    if (!source) {
+      console.error(`  volet source absent (${sens === 'dark' ? 'palette' : 'paletteDark'}) — rien a deriver.`);
+      return 2;
+    }
+    const existant = tokens[cibleKey];
+    if (existant && !existant.derived && !flag('force', false)) {
+      console.error(`  ${cibleKey} existe et vient d'une MESURE — un derive ne l'ecrase pas. Relance avec --force si c'est voulu.`);
+      return 1;
+    }
+    const { invertPalette, formatSchemeReport } = await import('../src/scheme.mjs');
+    const { palette: derive, report } = invertPalette(source);
+    tokens[cibleKey] = derive;
+    tokens.provenance = tokens.provenance || {};
+    tokens.provenance[cibleKey] = {
+      source: 'derive',
+      url: `inversion OKLab du volet ${sens === 'dark' ? 'clair' : 'sombre'}`,
+      title: 'non mesure'
+    };
+    tokens.generatedAt = new Date().toISOString();
+    const outDir = dirname(masterPath);
+    write(masterPath, JSON.stringify(tokens, null, 2));
+    write(join(outDir, 'MASTER.md'), renderMaster(tokens));
+    write(join(outDir, 'tokens.css'), renderCss(tokens));
+    console.log(formatSchemeReport(report, sens === 'dark' ? 'SOMBRE' : 'CLAIR'));
+    return 0;
   }
 
   if (cmd === 'palette') {

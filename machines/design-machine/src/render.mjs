@@ -61,6 +61,7 @@ export function renderMaster(t) {
     lines.push('');
     lines.push('### Volet sombre');
     lines.push('');
+    if (pd.derived) lines.push('**Dérivé** (inversion OKLab du clair, contrastes reproduits) — non mesuré.');
     lines.push(`- Fond dominant : \`${pd.background ?? '—'}\``);
     lines.push(`- Surfaces : ${list((pd.surfaces || []).map(c => `\`${c}\``))}`);
     lines.push(`- Encre : \`${pd.ink ?? '—'}\``);

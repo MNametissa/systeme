@@ -48,7 +48,9 @@ Ne proposer aucune direction visuelle. Obtenir du demandeur, une question à la 
    imposées ou sous licence, nature du livrable (app, landing, dashboard).
    Mode sombre voulu → extraire aussi en `--scheme dark` (source possiblement
    différente) et affecter `paletteDark=<label>` au merge : la porte jugera
-   alors les DEUX schémas.
+   alors les DEUX schémas. Aucune source pour l'autre thème → `dm scheme dark`
+   (ou `light`) le dérive : contrastes reproduits, volet marqué `derived` —
+   une mesure réelle reste toujours préférable.
 
 Puis dérouler, sans réinventer :
 

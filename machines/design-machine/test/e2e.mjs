@@ -92,6 +92,24 @@ test('juger en sombre un contrat sans volet est un REFUS, pas un verdict', () =>
   assert.ok(r.stderr.includes('volet sombre'));
 });
 
+test('scheme : derive le volet sombre, refuse d ecraser un volet mesure', () => {
+  // contrat clair seul -> derivation acceptee
+  const m = dm('merge', '--sources', 'sources',
+    '--map', 'typography=S,palette=S,spatial=S,motion=S,surfaceStyle=S', '--out', 'ds-derive');
+  assert.equal(m.status, 0, m.stderr);
+  const r = dm('scheme', 'dark', '--master', 'ds-derive/tokens.json');
+  assert.equal(r.status, 0, r.stdout + r.stderr);
+  assert.ok(r.stdout.includes('VOLET SOMBRE DERIVE'));
+  const t = JSON.parse(readFileSync(join(dir, 'ds-derive/tokens.json'), 'utf8'));
+  assert.equal(t.paletteDark.derived, true);
+  assert.equal(t.provenance.paletteDark.source, 'derive');
+  assert.ok(readFileSync(join(dir, 'ds-derive/tokens.css'), 'utf8').includes('prefers-color-scheme: dark'));
+  // contrat au volet MESURE -> refus sans --force
+  const refus = dm('scheme', 'dark', '--master', 'design-system/tokens.json');
+  assert.equal(refus.status, 1, refus.stdout + refus.stderr);
+  assert.ok(refus.stderr.includes('MESURE'));
+});
+
 test('palette : une capture d ecran devient une source de palette mesuree', () => {
   const shot = dm('extract', url('scheme.html'), '--label', 'Shot', '--out', 'sources/Shot.json', '--screenshot', 'shot.png', '--full-page');
   assert.equal(shot.status, 0, shot.stderr);
