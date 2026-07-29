@@ -51,11 +51,26 @@ def normaliser_document(doc, forme, compte):
             shd.set(qn("w:fill"), m_couleurs[val])
             compte["couleurs"] += 1
 
+    # les polices de texte nommées en dur basculent aussi sur le contrat ;
+    # les fontes à symboles gardent leurs glyphes
+    for rf in body.iter(qn("w:rFonts")):
+        actuelle = rf.get(qn("w:ascii")) or ""
+        if actuelle and actuelle != forme["police"] and \
+                not re.search(r"wingdings|symbol|webdings", actuelle, re.I):
+            for attr in ("w:ascii", "w:hAnsi", "w:eastAsia", "w:cs"):
+                if rf.get(qn(attr)):
+                    rf.set(qn(attr), forme["police"])
+            compte["polices"] += 1
+
     seuil = forme["justifier_a_partir_de"]
     for p in body.iter(W_P):
         for t in p.iter(W_T):
             if not t.text:
                 continue
+            for lourde in PUCES_LOURDES:
+                if lourde in t.text:
+                    compte["puces"] += t.text.count(lourde)
+                    t.text = t.text.replace(lourde, forme["puce"])
             for r in forme["remplacements"]:
                 if r["de"] in t.text:
                     t.text = t.text.replace(r["de"], r["vers"])

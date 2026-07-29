@@ -242,7 +242,10 @@ docx/PDF réelles (titre = client — projet, auteur GINUTECH, posées par
 lieu de 8), Gantt basculé sur le vert de marque `0d8a52`. La porte mesure
 désormais la forme sur le PDF rendu : `pdffonts` sans famille étrangère,
 fonds/tailles dans le contrat, titre PDF non générique (52 vérifications).
-Reste : normaliser les 7 autres sources (regard requis), lettrage « c. »
+Étendu le 2026-07-29 : contrat de forme appliqué aux **8 sources** (polices
+explicites Nunito/Arial/Times rabattues sur Candara, puces littérales ●
+comprises), 8 gabarits régénérés, livrables du jour produits (PTF + contrat
+de prestation assortis, contextes sourcés AF). Reste : lettrage « c. »
 minuscule de la section C, logos de références hétérogènes.
 
 Rend la relecture §3 opposable au lieu d'impressionniste. Transposition directe de
