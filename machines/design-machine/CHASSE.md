@@ -41,6 +41,26 @@ ordre : `--headed`, puis le vrai Chrome de l'utilisateur via claude-in-chrome.
 Toujours bloqué → écarter le candidat et le dire ; on n'ajoute pas d'outil de
 contournement pour un seul site (D-010).
 
+## 2 bis. Chasser aussi des IMAGES
+
+Quand l'énergie ou la palette vit dans un médium figé (affiche, planche de
+manga, jaquette, photo), la chasse ne s'arrête pas aux sites :
+
+- **Chercher** : recherche d'images (affiches du registre visé, couvertures,
+  planches), portfolios (Behance, ArtStation). Noter la provenance de chaque
+  image retenue.
+- **Rapatrier** dans `refs/` du projet (curl -o), jamais dans le livrable.
+- **Qualifier** : `dm palette refs/<image>` — palette mesurée aux pixels,
+  rôles par règles (surface, contraste, saturation). Et le regard : l'agent
+  compare visuellement l'image aux captures des candidats sites.
+- **Câbler** : l'image choisie devient une source de palette réelle —
+  `dm palette refs/affiche.jpg --label affiche` puis `palette=affiche` (ou
+  `paletteDark=affiche`) au merge, provenance tracée vers le fichier.
+
+Limite honnête : une image ne fournit NI motion, NI spatial, NI typographie
+mesurable — seulement la palette et un juge visuel. Les autres couches viennent
+toujours de sites rendus.
+
 ## 3. Présenter, faire choisir
 
 Un tableau : URL · les 6 nombres · une ligne sur ce que ce site apporte · la

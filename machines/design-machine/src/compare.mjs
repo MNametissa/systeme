@@ -15,7 +15,9 @@ export function deriveIntensity(raw) {
     rotatedRatio: (raw.rotated || 0) / v,
     offsetBlocks: (raw.hardShadows || 0) + (raw.darkPseudo || 0),
     overlapRatio: raw.sampled ? (raw.overlapPairs || 0) / raw.sampled : 0,
-    typeJump: mode && max ? +(max / mode).toFixed(2) : null
+    typeJump: mode && max ? +(max / mode).toFixed(2) : null,
+    chromaRatio: (raw.chromatic || 0) / v,
+    hues: Object.keys(raw.hueBuckets || {}).length
   };
 }
 
@@ -29,7 +31,9 @@ const METRICS = [
   { key: 'rotatedRatio', label: 'elements en rotation / visibles', fmt: pct },
   { key: 'offsetBlocks', label: 'ombres dures + blocs decales', fmt: num },
   { key: 'overlapRatio', label: 'chevauchements / echantillon', fmt: pct },
-  { key: 'typeJump', label: 'saut typographique (max / base)', fmt: mult }
+  { key: 'typeJump', label: 'saut typographique (max / base)', fmt: mult },
+  { key: 'chromaRatio', label: 'elements en couleur saturee / visibles', fmt: pct },
+  { key: 'hues', label: 'teintes distinctes (saturees)', fmt: num }
 ];
 
 export function compareIntensity(rawSource, rawRendu) {

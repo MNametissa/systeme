@@ -9,7 +9,28 @@ export function intensityCollector() {
   const out = {
     visible: 0, animated: 0, infiniteLoops: 0, rotated: 0,
     hardShadows: 0, darkPseudo: 0, overlapPairs: 0, sampled: 0,
+    chromatic: 0, hueBuckets: {},
     sizes: {}
+  };
+
+  // La couleur est une population comme une autre : ce qui n'est pas compte
+  // derive (constat : des rendus conformes qui tournent au noir et blanc).
+  const CHROMA_SAT = 0.25;
+  const satHue = css => {
+    const m = String(css).match(/\d+(\.\d+)?/g);
+    if (!m || m.length < 3) return null;
+    const [r, g, b] = m.map(Number);
+    if (m.length > 3 && Number(m[3]) < 0.5) return null; // quasi transparent
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    if (max < 40) return { sat: 0, hue: null }; // le quasi-noir n'est pas une teinte
+    const sat = max ? (max - min) / max : 0;
+    if (max === min) return { sat, hue: null };
+    const d = max - min;
+    let h;
+    if (max === r) h = ((g - b) / d + 6) % 6;
+    else if (max === g) h = (b - r) / d + 2;
+    else h = (r - g) / d + 4;
+    return { sat, hue: Math.round((h * 60) / 30) % 12 };
   };
 
   // Cibles animees a l'instant de la mesure (les boucles infinies y sont).
@@ -32,6 +53,17 @@ export function intensityCollector() {
     out.visible++;
 
     if (animTargets.has(el) || (s.animationName && s.animationName !== 'none')) out.animated++;
+
+    // Chromaticite : fond ou texte sature = element en couleur
+    let chroma = false;
+    for (const c of [s.backgroundColor, s.color]) {
+      const sh = satHue(c);
+      if (sh && sh.sat >= CHROMA_SAT) {
+        chroma = true;
+        if (sh.hue !== null) out.hueBuckets[sh.hue] = (out.hueBuckets[sh.hue] || 0) + 1;
+      }
+    }
+    if (chroma) out.chromatic++;
 
     // Rotation posee (indice de composition « sticker »)
     const m = s.transform;

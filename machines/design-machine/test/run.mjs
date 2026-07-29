@@ -434,11 +434,13 @@ const { deriveIntensity, compareIntensity, formatCompare } = compareMod;
 const rawBonito = {
   visible: 500, animated: 60, infiniteLoops: 8, rotated: 25,
   hardShadows: 30, darkPseudo: 10, overlapPairs: 40, sampled: 200,
+  chromatic: 90, hueBuckets: { 0: 40, 1: 20, 4: 10, 7: 5 },
   sizes: { 16: 300, 133: 4 }
 };
 const rawPlat = {
   visible: 120, animated: 2, infiniteLoops: 0, rotated: 0,
   hardShadows: 0, darkPseudo: 0, overlapPairs: 2, sampled: 60,
+  chromatic: 2, hueBuckets: { 0: 2 },
   sizes: { 16: 80, 76: 3 }
 };
 
@@ -457,6 +459,16 @@ test('compareIntensity marque ECART quand le rendu porte moins de la moitie', ()
   assert.equal(parCle.offsetBlocks.ecart, true);
   // saut typographique 8.31 → 4.75 : au-dessus de la moitie, pas un ecart
   assert.equal(parCle.typeJump.ecart, false);
+});
+
+test('un rendu noir et blanc face a une source coloree est un ECART chiffre', () => {
+  // Le reproche « ca tourne trop au N&B » devient deux nombres : part
+  // d'elements satures (18 % → 1.7 %) et teintes distinctes (4 → 1).
+  const rows = compareIntensity(rawBonito, rawPlat);
+  const parCle = Object.fromEntries(rows.map(r => [r.key, r]));
+  assert.equal(parCle.chromaRatio.ecart, true);
+  assert.equal(parCle.hues.ecart, true);
+  assert.equal(parCle.hues.source, 4);
 });
 
 test('compareIntensity ne signale rien entre deux pages equivalentes', () => {
