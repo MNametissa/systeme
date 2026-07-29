@@ -81,7 +81,8 @@ def main():
                           "sortie supprimée")
                     return 1
 
-    # Word actualisera les champs (sommaire) à l'ouverture du docx
+    # Word actualisera les champs (sommaire) à l'ouverture ; le PDF hérite
+    # des métadonnées du docx (titre, auteur, sujet)
     with zipfile.ZipFile(sortie) as zin:
         membres = {i.filename: zin.read(i.filename) for i in zin.infolist()}
         infos = zin.infolist()
@@ -90,9 +91,19 @@ def main():
         reglages = re.sub(r"(<w:settings[^>]*>)",
                           r'\1<w:updateFields w:val="true"/>', reglages, count=1)
         membres["word/settings.xml"] = reglages.encode("utf-8")
-        with zipfile.ZipFile(sortie, "w", zipfile.ZIP_DEFLATED) as zout:
-            for item in infos:
-                zout.writestr(item, membres[item.filename])
+    titre = " — ".join(x for x in [contexte.get("client_name"),
+                                   contexte.get("project_title")] if x) \
+        or sortie.stem
+    coeur = membres["docProps/core.xml"].decode("utf-8")
+    coeur = re.sub(r"<dc:title>[^<]*</dc:title>|<dc:title/>", "", coeur)
+    coeur = re.sub(r"<dc:creator>[^<]*</dc:creator>|<dc:creator/>", "", coeur)
+    coeur = coeur.replace("</cp:coreProperties>",
+                          f"<dc:title>{titre}</dc:title>"
+                          f"<dc:creator>GINUTECH</dc:creator></cp:coreProperties>")
+    membres["docProps/core.xml"] = coeur.encode("utf-8")
+    with zipfile.ZipFile(sortie, "w", zipfile.ZIP_DEFLATED) as zout:
+        for item in infos:
+            zout.writestr(item, membres[item.filename])
 
     erreur = convertir_pdf(sortie, pdf)
     if erreur:

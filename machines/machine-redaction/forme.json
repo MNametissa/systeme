@@ -1,0 +1,15 @@
+{
+  "_quoi": "Contrat de forme des gabarits GINUTECH — l'équivalent Rédaction des tokens de la design-machine. Toute valeur hors de ce contrat est un écart mesurable.",
+  "police": "Candara",
+  "puce": "•",
+  "tailles_autorisees": [20, 24, 28, 32, 36, 40],
+  "mapping_tailles": { "21": 20, "22": 20, "26": 24, "30": 28, "34": 36 },
+  "couleurs_autorisees": ["0d8a52", "1f5faf", "666666", "cccccc", "eef3fb", "000000", "ffffff", "auto"],
+  "mapping_couleurs": { "339933": "0d8a52", "b7b7b7": "cccccc" },
+  "remplacements": [
+    { "de": "Document commercial - Usage interne et client", "vers": "Document commercial — Usage interne et client" },
+    { "de": "Document contractuel - usage interne et client", "vers": "Document contractuel — Usage interne et client" },
+    { "de": "Durée (en semaine)", "vers": "Durée (en semaines)" }
+  ],
+  "justifier_a_partir_de": 100
+}

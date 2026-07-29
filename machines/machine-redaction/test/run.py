@@ -121,7 +121,7 @@ vertes = 0
 for tr in re.findall(r"<w:tr[ >].*?</w:tr>", tbl_planning, re.S):
     txt_tr = "".join(re.findall(r"<w:t[^>]*>([^<]*)</w:t>", tr)).strip()
     if txt_tr.startswith("Phase"):
-        n_tr = tr.count('w:fill="339933"')
+        n_tr = tr.count('w:fill="0d8a52"')
         vertes += n_tr
         if txt_tr.startswith("Phase 1") and n_tr != 1:
             echec("gantt", f"phase 1 (durée 1) : {n_tr} cellules ombrées au lieu de 1")
@@ -599,6 +599,41 @@ if m and int(m.group(1)) > 2000000:
     echec("finitions", f"cachet ancré à {m.group(1)} EMU — il chevauche la "
           "colonne signature du client au lieu de couvrir celle de GINUTECH")
 ok("finitions: montants à droite, effectifs centrés, footer élargi, cachet côté GINUTECH")
+
+# ── 23. Contrat de forme : police unique, palette et échelle fermées ──────
+forme = json.loads((RACINE / "forme.json").read_text())
+r = subprocess.run(["pdffonts", str(pdf_livrable)], capture_output=True, text=True)
+familles = {l.split()[0].split("+")[-1] for l in r.stdout.splitlines()[2:] if l.strip()}
+etrangeres = {f for f in familles if forme["police"] not in f}
+if etrangeres:
+    echec("forme: polices", f"familles hors contrat dans le PDF : {sorted(etrangeres)} "
+          f"(attendu : {forme['police']} seule)")
+ok(f"forme: police unique dans le PDF ({sorted(familles)})")
+
+xml_liv = zipfile.ZipFile(livrable).read("word/document.xml").decode("utf-8")
+fills = set(re.findall(r'w:fill="([0-9A-Fa-f]{6}|auto)"', xml_liv))
+hors_palette = fills - set(forme["couleurs_autorisees"])
+if hors_palette:
+    echec("forme: palette", f"fonds hors contrat : {sorted(hors_palette)}")
+couleurs_txt = set(re.findall(r'<w:color w:val="([0-9A-Fa-f]{6})"/>', xml_liv))
+hors_palette = couleurs_txt - set(forme["couleurs_autorisees"])
+if hors_palette:
+    echec("forme: palette texte", f"couleurs hors contrat : {sorted(hors_palette)}")
+tailles = {int(t) for t in re.findall(r'<w:sz w:val="(\d+)"/>', xml_liv)}
+hors_echelle = tailles - set(forme["tailles_autorisees"])
+if hors_echelle:
+    echec("forme: échelle", f"tailles hors contrat (demi-points) : {sorted(hors_echelle)}")
+ok("forme: palette et échelle typographique fermées")
+
+corps_liv = textes_docx(livrable)["word/document.xml"]
+if "Durée (en semaines)" not in corps_liv or "— Usage interne" not in corps_liv:
+    echec("forme: micro-textes", "'en semaines' ou tiret cadratin absent")
+r = subprocess.run(["pdfinfo", str(pdf_livrable)], capture_output=True, text=True)
+titre_pdf = next((l.split(":", 1)[1].strip() for l in r.stdout.splitlines()
+                  if l.startswith("Title")), "")
+if not titre_pdf or titre_pdf == "Word Document":
+    echec("forme: métadonnées", f"titre PDF : {titre_pdf!r}")
+ok(f"forme: micro-textes corrigés, métadonnées PDF renseignées ({titre_pdf!r})")
 
 # ── 20. AF-xxx : chaque valeur chiffrée de la base de faits a une source ──
 AF = RACINE / "instruments" / "af_contexte.py"

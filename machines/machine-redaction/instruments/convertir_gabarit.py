@@ -191,7 +191,7 @@ def convertir_planning(body, compte):
         for semaine, tc in enumerate(modele.findall(qn("w:tc"))[1:], start=1):
             for shd in tc.iter(qn("w:shd")):
                 shd.getparent().remove(shd)
-            condition = (f"'339933' if item.duree is defined and "
+            condition = (f"'0d8a52' if item.duree is defined and "
                          f"item.debut <= {semaine} < item.debut + item.duree "
                          f"else 'auto'")
             ts = list(tc.iter(W_T))

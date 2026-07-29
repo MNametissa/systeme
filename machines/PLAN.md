@@ -231,6 +231,20 @@ droite, effectifs centrés, footer élargi, keepNext sur le titre de solution ;
 AF, cellules `{% cellbg %}` — grille vierge si le contexte n'a pas de
 planning) ; bloc signature avec cachet posé côté GINUTECH.
 
+**Vague 7 — contrat de forme (2026-07-29)**, née du verdict « pas pro du
+tout » : `forme.json` (police unique, échelle 6 tailles, palette fermée
+alignée sur le logo, puce, micro-textes) appliqué par
+`normaliser_gabarit.py` à la source PTF — la police par défaut était
+**Aptos, absente de la machine** : le PDF mélangeait Candara, Noto Sans et
+DejaVu (signature, puces) sans que rien ne le dise. Aussi : métadonnées
+docx/PDF réelles (titre = client — projet, auteur GINUTECH, posées par
+`remplir_gabarit`), saut de page du vide de la page 3 retiré (7 pages au
+lieu de 8), Gantt basculé sur le vert de marque `0d8a52`. La porte mesure
+désormais la forme sur le PDF rendu : `pdffonts` sans famille étrangère,
+fonds/tailles dans le contrat, titre PDF non générique (52 vérifications).
+Reste : normaliser les 7 autres sources (regard requis), lettrage « c. »
+minuscule de la section C, logos de références hétérogènes.
+
 Rend la relecture §3 opposable au lieu d'impressionniste. Transposition directe de
 ce qui a marché sur la tranche B : les `FR-001` numérotés ont permis à l'audit
 d'opposer un scénario à une exigence précise, au lieu de « ça me semble flou ».
