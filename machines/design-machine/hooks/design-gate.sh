@@ -27,6 +27,22 @@ if [ $? -eq 1 ]; then
   exit 2
 fi
 
+# Identite du serveur : ne JAMAIS juger le rendu d'un autre projet. Le port
+# par defaut est partage entre tous les projets de la machine — on exige que
+# le processus qui ecoute ait son cwd dans CE projet. Une DM_DEV_URL declaree
+# est souveraine (une declaration est un fait). Identite improuvable (pas de
+# lsof, conteneur) : silence — ne pas pouvoir identifier n'autorise pas a juger.
+if [ -z "${DM_DEV_URL:-}" ]; then
+  PORT="${DEV_URL##*:}"; PORT="${PORT%%/*}"
+  MATCH=0
+  for pid in $(lsof -t -iTCP:"$PORT" -sTCP:LISTEN 2>/dev/null); do
+    case "$(readlink "/proc/$pid/cwd" 2>/dev/null)" in
+      "$PWD"|"$PWD"/*) MATCH=1 ;;
+    esac
+  done
+  [ "$MATCH" -eq 1 ] || exit 0
+fi
+
 # Serveur eteint : la porte rendue ne peut pas tourner, sortie silencieuse.
 if ! curl -sSf -o /dev/null --max-time 2 "$DEV_URL" 2>/dev/null; then
   exit 0
