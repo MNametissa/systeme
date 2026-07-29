@@ -38,7 +38,7 @@ Sinon `export CHROME_PATH=/chemin/vers/chrome`.
 ```bash
 cd design-machine
 npm install
-npm test                # 26 tests, sans navigateur
+npm test                # 56 tests, sans navigateur
 npm link                # met `dm` dans le PATH
 
 cp -r skill/design-machine ~/.claude/skills/

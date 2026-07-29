@@ -43,7 +43,7 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test        # 48 tests sur les parties deterministes, sans navigateur
+npm test        # 56 tests sur les parties deterministes, sans navigateur
 ```
 
 ---
@@ -325,7 +325,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            48 tests, sans navigateur ni Impeccable
+test/run.mjs            56 tests, sans navigateur ni Impeccable
 ```
 
 MIT.

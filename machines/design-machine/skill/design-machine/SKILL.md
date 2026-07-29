@@ -71,6 +71,10 @@ composition, pas en désactivant l'instrument. Si l'intensité vient d'un médiu
 non-web, `compare` ne chiffre que le plancher : le juge des effets transposés
 est le demandeur, écran par écran.
 
+L'accessibilité est une porte séparée (D-033) : après un travail d'UI
+substantiel, lancer le skill `accesslint:diff` (baseline puis violations
+NOUVELLES seulement) — la porte design ne la couvre pas.
+
 Une panne (tokens corrompus, capture qui lève) ferme la porte ; seul un outil
 absent la laisse ouverte. Une dérive signalée se corrige en revenant aux tokens ;
 si la dérive est voulue, on régénère le MASTER — on ne contourne jamais la porte.

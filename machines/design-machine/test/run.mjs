@@ -565,11 +565,31 @@ test('parseArgs associe la valeur au drapeau qui la precede', () => {
   assert.equal(r.flags.headed, true);
 });
 
+test('parseArgs accepte la forme --drapeau=valeur', () => {
+  const r = parseArgs(['http://cible', '--label=A', '--width=375'], BOOL_FLAGS);
+  assert.deepEqual(r.positional, ['http://cible']);
+  assert.equal(r.flags.label, 'A');
+  assert.equal(r.flags.width, '375');
+});
+
 test('parseArgs survit aux valeurs repetees', () => {
   // indexOf cassait des qu'un positionnel et une valeur de drapeau etaient egaux.
   const r = parseArgs(['sources/A.json', '--out', 'sources/A.json'], BOOL_FLAGS);
   assert.deepEqual(r.positional, ['sources/A.json']);
   assert.equal(r.flags.out, 'sources/A.json');
+});
+
+// D12 a recidive deux fois (17→26, 48→55) : le compte annonce est teste.
+// Ce test doit rester LE DERNIER : le total attendu l'inclut.
+const { readFileSync: rf } = await import('node:fs');
+test('README et STACK annoncent le compte de tests reel', () => {
+  const total = pass + fail + 1;
+  for (const doc of ['../README.md', '../STACK.md']) {
+    const txt = rf(new URL(doc, import.meta.url), 'utf8');
+    for (const m of txt.matchAll(/(\d+) tests/g)) {
+      assert.equal(+m[1], total, `${doc} annonce ${m[1]}, reel ${total}`);
+    }
+  }
 });
 
 console.log(`\n  ${pass} passes, ${fail} echecs\n`);

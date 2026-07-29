@@ -11,7 +11,9 @@ export function parseArgs(tokens, boolFlags = BOOL_FLAGS) {
   for (let i = 0; i < tokens.length; i++) {
     const t = tokens[i];
     if (!t.startsWith('--')) { positional.push(t); continue; }
-    const name = t.slice(2);
+    let name = t.slice(2);
+    const eq = name.indexOf('=');
+    if (eq !== -1) { flags[name.slice(0, eq)] = name.slice(eq + 1); continue; }
     if (boolFlags.has(name)) { flags[name] = true; continue; }
     const next = tokens[i + 1];
     if (next !== undefined && !next.startsWith('--')) { flags[name] = next; i++; }
