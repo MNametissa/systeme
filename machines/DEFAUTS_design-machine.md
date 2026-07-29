@@ -4,8 +4,11 @@ Source : `~/Documents/Personnels/design-machine.zip`, 21 fichiers, 26 tests vert
 Chaque entrée « prouvé » a été exécutée, pas déduite.
 
 **Corrigés le 2026-07-27** (session d'exhumation) : D1, D2, D3, D5, D7, D8, D11,
-D12 — code dans `machines/design-machine/`, 32 tests verts, scénarios rejoués
-avec comportement inverse. Restent ouverts : D4, D6, D9, D10, D13.
+D12 — code dans `machines/design-machine/`, scénarios rejoués avec comportement
+inverse. **Le 2026-07-29** : D4 (D-033, AccessLint installé), D9/D10
+(install-stack réécrit), D13 (noms AccessLint et CLI Impeccable revérifiés sur
+pièces). Reste ouvert : D6 seul (niveau composant — se ferme par la section 05
+depuis le code du projet, quand un rendu satisfait).
 
 ## Bloquants — la machine ment sans le dire
 
@@ -47,11 +50,13 @@ avec comportement inverse. Restent ouverts : D4, D6, D9, D10, D13.
       chemin : wrapper `~/.local/bin/dm` vers la copie canonique du dépôt
       (`machines/design-machine/`), hook par défaut `dm` du PATH (surcharge
       `DM_BIN`), README aligné. → D-029.
-- [ ] **D9. `install-stack.sh` n'installe que l'étape 1** — les sections 2 à 5
-      (Impeccable, AccessLint, Vercel, audit) n'appellent que `step` = `printf`.
-      Même avec `--apply`, rien ne s'exécute. Le nom promet plus que le fichier.
-- [ ] **D10. `run()` avale les échecs** (`|| return 0`) — un `npm test` rouge
-      n'interrompt pas l'installation : la machine s'installe cassée en silence.
+- [x] **D9. `install-stack.sh` n'installe que l'étape 1** *(corrigé 2026-07-29)*
+      — réécrit en script honnête : 4 gestes réels (deps, tests, wrapper, skill),
+      les étapes 2-5 explicitement déléguées à STACK.md (calibrer avant de
+      câbler) et `dm doctor` en constat final. Éprouvé en réel.
+- [x] **D10. `run()` avale les échecs** *(corrigé 2026-07-29)* — `set -euo
+      pipefail` : tout échec interrompt bruyamment. La classe « s'installe
+      cassée en silence » est fermée aux deux bouts (install + doctor).
 - [x] **D11. Skill copié dans le mauvais profil** *(corrigé)* — `SKILLS_DIR` par
       défaut `~/.claude-mecid/skills` ; skill réécrit (intake des entrées :
       intention, sites de référence, affectation couche→source, contraintes) et

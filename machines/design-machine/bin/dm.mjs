@@ -59,6 +59,12 @@ design-machine — extraire, composer, verifier
       Projette le contrat en natif : tokens.dart (Flutter), tokens.ts
       (React Native, Electron, Ionic). Derives, regeneres, jamais edites.
 
+  dm palette <image> [--label X --out sources/X.json] [--json]
+      Une image (png/jpg/webp/gif) comme source de palette MESUREE : pixels
+      quantifies, roles par regles (surface, contraste). Avec --label/--out,
+      ecrit une source utilisable par dm merge (palette=X ou paletteDark=X).
+      On derive des regles, pas des actifs : l'image n'entre jamais au livrable.
+
   dm doctor
       Preconditions nommees, echec bruyant : Node, Chromium, skill dans le BON
       profil, impeccable/accesslint presents ou explicitement absents, contrat
@@ -249,6 +255,20 @@ async function main() {
     if (target === 'dart') { write(flag('out', 'design-system/tokens.dart'), renderDart(tokens)); return 0; }
     if (target === 'ts') { write(flag('out', 'design-system/tokens.ts'), renderTs(tokens)); return 0; }
     console.error(USAGE); return 2;
+  }
+
+  if (cmd === 'palette') {
+    const img = positional[0];
+    if (!img) { console.error(USAGE); return 2; }
+    const { paletteFromImage, formatPalette, toSource } = await import('../src/palette.mjs');
+    console.error(`  lecture ${img}`);
+    const p = await paletteFromImage(img);
+    const label = flag('label');
+    if (typeof label === 'string') {
+      write(flag('out', `sources/${label}.json`), JSON.stringify(toSource(p, label, img), null, 2));
+    }
+    console.log(flag('json', false) ? JSON.stringify(p, null, 2) : formatPalette(p, img));
+    return 0;
   }
 
   if (cmd === 'doctor') {

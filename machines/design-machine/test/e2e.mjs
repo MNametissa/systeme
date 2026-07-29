@@ -92,6 +92,18 @@ test('juger en sombre un contrat sans volet est un REFUS, pas un verdict', () =>
   assert.ok(r.stderr.includes('volet sombre'));
 });
 
+test('palette : une capture d ecran devient une source de palette mesuree', () => {
+  const shot = dm('extract', url('scheme.html'), '--label', 'Shot', '--out', 'sources/Shot.json', '--screenshot', 'shot.png', '--full-page');
+  assert.equal(shot.status, 0, shot.stderr);
+  const r = dm('palette', 'shot.png', '--label', 'affiche');
+  assert.equal(r.status, 0, r.stderr);
+  const src = JSON.parse(readFileSync(join(dir, 'sources/affiche.json'), 'utf8'));
+  // la page claire domine : le fond mesure doit etre tres clair
+  const lum = parseInt(src.palette.background.slice(1), 16);
+  assert.ok(((lum >> 16) & 255) > 200, `fond ${src.palette.background} attendu clair`);
+  assert.ok(r.stdout.includes('PALETTE MESUREE'));
+});
+
 test('lint attrape un litteral hors tokens, ignore les fichiers theme', () => {
   writeFileSync(join(dir, 'app.dart'), 'final c = Color(0xFF112233);');
   writeFileSync(join(dir, 'tokens.dart'), 'final bg = Color(0xFF262626);');

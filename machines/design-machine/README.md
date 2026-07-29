@@ -7,7 +7,8 @@ par couches orthogonales, verifier qu'un rendu respecte le resultat.
 > Ce README ne couvre que le paquet lui-meme. `STACK.md` couvre toute la chaine :
 > Impeccable, AccessLint, Vercel, ce qui s'exclut, ce qui s'additionne, dans quel ordre.
 >
-> Raccourci : `./install-stack.sh` (simulation) puis `./install-stack.sh --apply`.
+> Raccourci noyau : `./install-stack.sh` — 4 gestes reels, echec bruyant,
+> `dm doctor` en constat final. La chaine complete reste manuelle (STACK.md).
 
 Trois commandes, un contrat, une porte.
 
@@ -43,8 +44,8 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test            # 58 tests sur les parties deterministes, sans navigateur
-npm run test:e2e    # 7 passes reelles Chromium sur fixtures locales, zero reseau
+npm test            # 61 tests sur les parties deterministes, sans navigateur
+npm run test:e2e    # 8 passes reelles Chromium sur fixtures locales, zero reseau
 dm doctor           # preconditions nommees : Node, Chromium, profil, options
 ```
 
@@ -334,7 +335,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            58 tests, sans navigateur ni Impeccable
+test/run.mjs            61 tests, sans navigateur ni Impeccable
 ```
 
 MIT.

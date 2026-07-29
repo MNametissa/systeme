@@ -579,6 +579,46 @@ test('parseArgs survit aux valeurs repetees', () => {
   assert.equal(r.flags.out, 'sources/A.json');
 });
 
+// --- palette depuis image ---
+
+const { contrastRatio, rolesFromCounts, toSource } = await import('../src/palette.mjs');
+
+test('contrastRatio suit WCAG : noir/blanc = 21, identiques = 1', () => {
+  assert.equal(Math.round(contrastRatio('#000000', '#ffffff')), 21);
+  assert.equal(contrastRatio('#888888', '#888888'), 1);
+});
+
+test('rolesFromCounts attribue par surface et contraste, pas au gout', () => {
+  const p = rolesFromCounts({
+    '#f8f8f8': 8000,  // le plus couvrant -> fond
+    '#181818': 1500,  // le plus contraste -> encre
+    '#ffffff': 900,   // couvrant restant -> surface
+    '#787068': 400,   // contraste ET peu sature -> attenue
+    '#d84818': 300,   // contraste MAIS sature -> accent, pas attenue
+    '#e8e8e8': 20     // < 0.5 % : ignore des roles
+  });
+  assert.equal(p.background, '#f8f8f8');
+  assert.equal(p.ink, '#181818');
+  assert.equal(p.muted, '#787068');
+  assert.ok(p.surfaces.includes('#ffffff'));
+  assert.ok(p.accents.includes('#d84818'));
+  assert.ok(!p.accents.includes('#e8e8e8'));
+  assert.equal(p.evidence[0].share, +(8000 / 11120).toFixed(4));
+});
+
+test('toSource produit une source consommable par merge (palette d une image)', () => {
+  const p = rolesFromCounts({ '#111118': 5000, '#f0f0f0': 800 });
+  const src = toSource({ ...p, sampledPixels: 5800 }, 'affiche', '/tmp/affiche.png');
+  assert.equal(src.palette.background, '#111118');
+  assert.ok(src.url.startsWith('file://'), 'provenance tracee vers le fichier');
+  // Cas d'usage reel : les couches structurelles d'un site, la palette sombre d'une affiche.
+  const t = merge([normalize(siteB, 'B'), src],
+    parseMap('typography=B,palette=B,spatial=B,motion=B,surfaceStyle=B,paletteDark=affiche'));
+  assert.equal(t.paletteDark.background, '#111118');
+  assert.equal(t.provenance.paletteDark.source, 'affiche');
+});
+
+
 // --- doctor ---
 
 const { doctorExitCode, formatDoctor } = await import('../src/doctor.mjs');
