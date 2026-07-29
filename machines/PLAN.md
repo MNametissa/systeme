@@ -329,8 +329,10 @@ Les stacks de Marcel. Trois pièces (`src/native.mjs`, `src/lint.mjs`) :
       installé. Chargé et visible en session dès l'installation.
 
 - [x] **D5** — porte design câblée en `Stop` (snippet + hook mis à jour, D-030)
-- [ ] **D4** — décider si le contraste entre dans `dm gate` ou reste chez
-      AccessLint. En l'état, la porte bénit un contrat illisible.
+- [x] **D4** — tranché (D-033, 2026-07-29) : l'accessibilité chez AccessLint,
+      porte séparée (`diff` d'abord), installé au profil mecid ; Impeccable
+      installé dans shoguna — `dm gate` a ses deux lames. Noms revérifiés,
+      crainte D13 levée sur ce point.
 - [x] **D7** — `--no-sandbox` retiré ; `DM_NO_SANDBOX=1` réservé aux conteneurs
 - [ ] **spec-kit** : périmètre arrêté — cahier de conception et spécification
       uniquement (là où il a fait ses preuves, tranche B). Pas sur PTF, devis,
