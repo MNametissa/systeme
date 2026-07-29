@@ -102,6 +102,7 @@ test('palette : une capture d ecran devient une source de palette mesuree', () =
   const lum = parseInt(src.palette.background.slice(1), 16);
   assert.ok(((lum >> 16) & 255) > 200, `fond ${src.palette.background} attendu clair`);
   assert.ok(r.stdout.includes('PALETTE MESUREE'));
+  assert.ok(r.stdout.includes('intensite visuelle'), 'le bloc pixels doit sortir');
 });
 
 test('lint attrape un litteral hors tokens, ignore les fichiers theme', () => {

@@ -50,16 +50,25 @@ manga, jaquette, photo), la chasse ne s'arrête pas aux sites :
   planches), portfolios (Behance, ArtStation). Noter la provenance de chaque
   image retenue.
 - **Rapatrier** dans `refs/` du projet (curl -o), jamais dans le livrable.
-- **Qualifier** : `dm palette refs/<image>` — palette mesurée aux pixels,
-  rôles par règles (surface, contraste, saturation). Et le regard : l'agent
-  compare visuellement l'image aux captures des candidats sites.
-- **Câbler** : l'image choisie devient une source de palette réelle —
-  `dm palette refs/affiche.jpg --label affiche` puis `palette=affiche` (ou
-  `paletteDark=affiche`) au merge, provenance tracée vers le fichier.
+- **Qualifier aux pixels** : `dm palette refs/<image>` — palette mesurée
+  (rôles par surface/contraste/saturation) ET intensité visuelle chiffrée :
+  part de pixels saturés, teintes, densité d'arêtes (le fourmillement),
+  contraste p5-p95. De quoi comparer des candidats sur des nombres.
+- **Qualifier au regard** : l'agent OUVRE l'image (il voit) et en lit ce que
+  les pixels ne chiffrent pas — cadrage, diagonales, onomatopées, alternance
+  calme/explosion, superpositions. Cette lecture se TRANSPOSE en effets nommés
+  observables (frappes, impact frames, collage, bursts…), présentés au
+  demandeur pour validation AVANT d'implémenter — c'est ainsi qu'une image
+  devient une source d'intensité, pas seulement de couleurs.
+- **Câbler** : la palette élue entre au merge (`dm palette refs/affiche.jpg
+  --label affiche` puis `palette=affiche` ou `paletteDark=affiche`) ; les
+  effets validés entrent dans la grammaire du projet ; l'image reste dans
+  `refs/` comme juge visuel de chaque itération (rendu capturé vs image,
+  côte à côte).
 
-Limite honnête : une image ne fournit NI motion, NI spatial, NI typographie
-mesurable — seulement la palette et un juge visuel. Les autres couches viennent
-toujours de sites rendus.
+Limite honnête : une image ne fournit ni motion mesurée, ni maille, ni
+typographie identifiable — ses durées et ses polices se DÉCIDENT (nuancier,
+sources web), elles ne s'extraient pas d'un pixel.
 
 ## 3. Présenter, faire choisir
 

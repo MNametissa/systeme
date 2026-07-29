@@ -34,6 +34,10 @@ Ne proposer aucune direction visuelle. Obtenir du demandeur, une question à la 
    onomatopées surgissantes, contraste calme/burst…) et les faire valider
    AVANT d'implémenter. La chorégraphie est ensuite libre : seul le choix des
    valeurs reste contraint par les tokens.
+   Une IMAGE fournie (affiche, planche) est une source à part entière :
+   `dm palette` la chiffre (couleurs, saturation, fourmillement, contraste)
+   et le modèle la REGARDE — sa lecture se transpose en effets nommés, et
+   l'image reste dans `refs/` comme juge visuel de chaque itération.
    Pas de référence sous la main → CHASSER : protocole complet dans
    `~/development/systeme/machines/design-machine/CHASSE.md` (réflexion →
    WebSearch → `dm density` par candidat → le demandeur choisit sur pièces).

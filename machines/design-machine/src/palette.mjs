@@ -71,7 +71,47 @@ export function formatPalette(p, label = '') {
   for (const e of p.evidence) l.push(`    ${e.hex}  ${(e.share * 100).toFixed(1)} %`);
   l.push('');
   l.push('  Roles par regles (surface, contraste) — a re-affecter si le sens visuel differe.');
+  if (p.visual) {
+    l.push('');
+    l.push(formatVisual(p.visual));
+  }
   return l.join('\n');
+}
+
+// L'image porte aussi une INTENSITE mesurable aux pixels — part de couleur,
+// teintes, densite d'aretes (le fourmillement), contraste. Le reste (cadrage,
+// onomatopees, diagonales) releve de la vision du modele : lecture transposee
+// en effets nommes, validee par le demandeur — jamais chiffree de force.
+export function visualFromAggregates(a) {
+  const opaque = a.opaque || 1;
+  const hist = a.lumHist || [];
+  const total = hist.reduce((n, c) => n + c, 0) || 1;
+  const pct = q => {
+    let cum = 0;
+    for (let i = 0; i < hist.length; i++) {
+      cum += hist[i];
+      if (cum / total >= q) return (i * 16 + 8) / 255;
+    }
+    return 1;
+  };
+  return {
+    chromaShare: +((a.satPixels || 0) / opaque).toFixed(3),
+    hues: Object.keys(a.hueBuckets || {}).length,
+    edgeDensity: +((a.edges || 0) / opaque).toFixed(3),
+    contrast: +(pct(0.95) - pct(0.05)).toFixed(2)
+  };
+}
+
+export function formatVisual(v) {
+  return [
+    '  intensite visuelle (pixels) :',
+    `    couleur saturee   ${(v.chromaShare * 100).toFixed(1)} % des pixels`,
+    `    teintes           ${v.hues}`,
+    `    densite d'aretes  ${(v.edgeDensity * 100).toFixed(1)} % (le fourmillement)`,
+    `    contraste p5-p95  ${v.contrast}`,
+    '  Le cadrage, les onomatopees, les diagonales : lecture visuelle du modele,',
+    '  a transposer en effets nommes et faire valider.'
+  ].join('\n');
 }
 
 // --- navigateur : compter les pixels via canvas ---
@@ -91,14 +131,34 @@ function countPixels(dataUri) {
       ctx.drawImage(img, 0, 0, w, h);
       const d = ctx.getImageData(0, 0, w, h).data;
       const counts = {};
+      const agg = { opaque: 0, satPixels: 0, hueBuckets: {}, lumHist: new Array(16).fill(0), edges: 0 };
+      let prevLum = null;
       for (let i = 0; i < d.length; i += 4) {
-        if (d[i + 3] < 128) continue; // pixel transparent
+        const x = (i / 4) % w;
+        if (d[i + 3] < 128) { prevLum = null; continue; } // pixel transparent
+        const [r, g, b] = [d[i], d[i + 1], d[i + 2]];
+        agg.opaque++;
+        const max = Math.max(r, g, b), min = Math.min(r, g, b);
+        const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+        agg.lumHist[Math.min(15, lum >> 4)]++;
+        if (max >= 40 && max && (max - min) / max >= 0.25) {
+          agg.satPixels++;
+          const dd = max - min;
+          let hh;
+          if (max === r) hh = ((g - b) / dd + 6) % 6;
+          else if (max === g) hh = (b - r) / dd + 2;
+          else hh = (r - g) / dd + 4;
+          const bucket = Math.round((hh * 60) / 30) % 12;
+          agg.hueBuckets[bucket] = (agg.hueBuckets[bucket] || 0) + 1;
+        }
+        if (x > 0 && prevLum !== null && Math.abs(lum - prevLum) > 32) agg.edges++;
+        prevLum = x === w - 1 ? null : lum;
         // quantification 4 bits par canal, representant au centre du seau
-        const hex = '#' + [d[i], d[i + 1], d[i + 2]]
+        const hex = '#' + [r, g, b]
           .map(v => ((v & 0xF0) | 0x08).toString(16).padStart(2, '0')).join('');
         counts[hex] = (counts[hex] || 0) + 1;
       }
-      res({ counts, width: img.width, height: img.height });
+      res({ counts, agg, width: img.width, height: img.height });
     };
     img.onerror = () => rej(new Error('image illisible'));
     img.src = dataUri;
@@ -119,10 +179,14 @@ export async function paletteFromImage(path) {
   const browser = await puppeteer.launch({ executablePath: findChrome(), headless: 'new', args });
   try {
     const page = await browser.newPage();
-    const { counts, width, height } = await page.evaluate(countPixels, dataUri);
+    const { counts, agg, width, height } = await page.evaluate(countPixels, dataUri);
     const roles = rolesFromCounts(counts);
     if (!roles) throw new Error('aucun pixel opaque mesure');
-    return { ...roles, width, height, sampledPixels: Object.values(counts).reduce((n, c) => n + c, 0) };
+    return {
+      ...roles, width, height,
+      visual: visualFromAggregates(agg),
+      sampledPixels: Object.values(counts).reduce((n, c) => n + c, 0)
+    };
   } finally {
     await browser.close();
   }

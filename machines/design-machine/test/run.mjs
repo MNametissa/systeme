@@ -593,7 +593,8 @@ test('parseArgs survit aux valeurs repetees', () => {
 
 // --- palette depuis image ---
 
-const { contrastRatio, rolesFromCounts, toSource } = await import('../src/palette.mjs');
+const paletteMod = await import('../src/palette.mjs');
+const { contrastRatio, rolesFromCounts, toSource } = paletteMod;
 
 test('contrastRatio suit WCAG : noir/blanc = 21, identiques = 1', () => {
   assert.equal(Math.round(contrastRatio('#000000', '#ffffff')), 21);
@@ -628,6 +629,26 @@ test('toSource produit une source consommable par merge (palette d une image)', 
     parseMap('typography=B,palette=B,spatial=B,motion=B,surfaceStyle=B,paletteDark=affiche'));
   assert.equal(t.paletteDark.background, '#111118');
   assert.equal(t.provenance.paletteDark.source, 'affiche');
+});
+
+
+test('visualFromAggregates chiffre l intensite d une image sans l inventer', () => {
+  const { visualFromAggregates, formatVisual } = paletteMod;
+  // 1000 pixels : 300 satures sur 3 teintes, 150 aretes, luminances bimodales
+  const lumHist = new Array(16).fill(0);
+  lumHist[1] = 500; lumHist[14] = 500; // sombre + clair -> contraste eleve
+  const v = visualFromAggregates({
+    opaque: 1000, satPixels: 300, hueBuckets: { 0: 200, 4: 60, 8: 40 },
+    lumHist, edges: 150
+  });
+  assert.equal(v.chromaShare, 0.3);
+  assert.equal(v.hues, 3);
+  assert.equal(v.edgeDensity, 0.15);
+  assert.ok(v.contrast > 0.7, `contraste ${v.contrast}`);
+  const plat = visualFromAggregates({ opaque: 1000, satPixels: 0, hueBuckets: {}, lumHist: (() => { const h = new Array(16).fill(0); h[8] = 1000; return h; })(), edges: 5 });
+  assert.equal(plat.chromaShare, 0);
+  assert.ok(plat.contrast < 0.1, 'une image plate avoue sa platitude');
+  assert.ok(formatVisual(v).includes('fourmillement'));
 });
 
 
