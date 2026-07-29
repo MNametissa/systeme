@@ -316,6 +316,33 @@ Les stacks de Marcel. Trois pièces (`src/native.mjs`, `src/lint.mjs`) :
 
 ---
 
+## T5quinquies — Clair et sombre — **FAIT (2026-07-29)**
+
+Le mode sombre est un volet de la palette, pas un second système.
+
+- [x] `--scheme dark|light` à l'extraction (et verify/density/compare) — le
+      schéma est TOUJOURS forcé, clair par défaut, jamais hérité de
+      l'environnement. **Défaut réel attrapé par la fixture** : le Chromium
+      headless héritait du thème sombre de la machine — les deux extractions
+      mesuraient le sombre en croyant mesurer le clair.
+- [x] `paletteDark` au merge — volet optionnel, source propre (possiblement
+      différente du clair), provenance tracée. tokens.css émet le media query
+      + `[data-theme="dark"]` ; export dart/ts projette les deux jeux.
+- [x] `dm verify --scheme dark` juge contre le volet ; contrat sans volet =
+      REFUS explicite (juger un rendu sombre contre le clair = verdict faux).
+- [x] `dm gate` vérifie LES DEUX schémas dès que le volet existe. Rejoué sur
+      fixture : rendu fidèle → ouverte 2× ; rendu aveugle au sombre →
+      `#ffffff (100 %)` vs volet, FERMÉE.
+- [x] **Second défaut réel attrapé** : le collecteur excluait le `<body>` — le
+      fond dominant élu était la plus grande carte, et une page sans autre
+      porteur de fond était invisible à la règle des fonds. Corrigé (le body
+      entre avec sa surface réelle) ; les MASTER regénérés après cette date
+      peuvent voir leur fond dominant changer (mesure plus juste, cf. bonito
+      crème vs #262626).
+- [x] 54 tests verts.
+
+---
+
 ## T6 — Câblage et périmètres (à trancher, pas à coder)
 
 - [x] **Rédaction câblée en session (2026-07-28)** — `skill/SKILL.md` mince

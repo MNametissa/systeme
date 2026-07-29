@@ -6,6 +6,10 @@ import { LAYERS } from './normalize.mjs';
 
 const FORBIDDEN = ['component', 'components', 'hero', 'card', 'nav', 'header', 'footer'];
 
+// Le volet sombre est une variante de la palette, pas une sixieme couche :
+// il est optionnel, et sa source peut differer de celle du clair.
+const VARIANTS = ['paletteDark'];
+
 export function parseMap(str) {
   const map = {};
   for (const pair of String(str).split(',')) {
@@ -17,8 +21,8 @@ export function parseMap(str) {
         `Composables : ${LAYERS.join(', ')}.`
       );
     }
-    if (!LAYERS.includes(layer)) {
-      throw new Error(`Couche inconnue "${layer}". Attendu : ${LAYERS.join(', ')}.`);
+    if (!LAYERS.includes(layer) && !VARIANTS.includes(layer)) {
+      throw new Error(`Couche inconnue "${layer}". Attendu : ${[...LAYERS, ...VARIANTS].join(', ')}.`);
     }
     map[layer] = src;
   }
@@ -40,6 +44,13 @@ export function merge(sources, map) {
     if (!src) throw new Error(`Source "${label}" absente. Disponibles : ${Object.keys(bySource).join(', ') || 'aucune'}.`);
     out[layer] = structuredClone(src[layer]);
     out.provenance[layer] = { source: label, url: src.url, title: src.title };
+  }
+
+  if (map.paletteDark) {
+    const src = bySource[map.paletteDark];
+    if (!src) throw new Error(`Source "${map.paletteDark}" absente. Disponibles : ${Object.keys(bySource).join(', ') || 'aucune'}.`);
+    out.paletteDark = structuredClone(src.palette);
+    out.provenance.paletteDark = { source: map.paletteDark, url: src.url, title: src.title };
   }
 
   const used = new Set(Object.values(map));

@@ -221,6 +221,24 @@ en code 2 pour qu'il corrige dans la foulee.
 
 ---
 
+## Clair et sombre
+
+Le mode sombre est un volet de la palette, pas un second systeme :
+
+```bash
+dm extract <url> --label A                 # theme clair (schema force)
+dm extract <url> --scheme dark --label A-dark
+dm merge --sources sources --map ...,paletteDark=A-dark
+```
+
+- Le volet peut venir d'une AUTRE source que le clair (une couche, une source).
+- `tokens.css` emet `@media (prefers-color-scheme: dark)` + `[data-theme="dark"]` ;
+  `dm export dart|ts` projette les deux jeux.
+- `dm gate` verifie LES DEUX schemas des que le volet existe : conforme en
+  clair et casse en sombre ferme la porte.
+- `dm verify --scheme dark` sans volet au contrat = REFUS explicite — juger un
+  rendu sombre contre la palette claire produirait un verdict faux.
+
 ## Stacks non-web : Flutter, React Native, Electron, Ionic
 
 Le contrat est `tokens.json` — `tokens.css` n'en est qu'une projection. Deux
@@ -272,8 +290,9 @@ Elles sont reelles, pas cosmetiques. A calibrer sur tes propres sources.
   mouvement rAF/canvas reste seulement detecte, jamais tokenise.
 - **Pas de conversion OKLCH.** Les couleurs sortent en hexadecimal sRGB. Si tu
   veux raisonner en luminosite perceptuelle, la conversion reste a ecrire.
-- **Le mode sombre n'est pas separe.** Un site qui suit `prefers-color-scheme`
-  est capture dans le mode de ton Chromium.
+- **Le schema de couleurs est toujours force** — clair par defaut, sombre via
+  `--scheme dark` — jamais herite de l'environnement : un Chromium sur une
+  machine au theme sombre mesurait le sombre en croyant mesurer le clair.
 - **La detection de maille est un vote, pas une preuve.** La maille retenue est
   la plus grande unite qui couvre au moins 80 % des valeurs ; sous ce seuil, le
   repli est le meilleur score et la couverture l'avoue. Une couverture sous 0.8

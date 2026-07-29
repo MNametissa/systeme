@@ -60,6 +60,12 @@ export async function capture(url, opts = {}) {
         deviceScaleFactor: 1
       });
     }
+    // Le schema est TOUJOURS force, clair par defaut — jamais herite de
+    // l'environnement : un Chromium sur une machine au theme sombre mesurait
+    // le theme sombre en croyant mesurer le clair (prouve sur fixture).
+    await page.emulateMediaFeatures([
+      { name: 'prefers-color-scheme', value: opts.scheme ?? 'light' }
+    ]);
     // La sonde motion s'installe AVANT la navigation : les loaders vivent
     // dans les premieres centaines de millisecondes.
     if (opts.motion) await page.evaluateOnNewDocument(motionProbe);

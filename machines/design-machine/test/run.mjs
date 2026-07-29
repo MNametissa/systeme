@@ -59,6 +59,18 @@ const siteC = {
   }
 };
 
+const siteD = {
+  url: 'https://d.test', title: 'Dark D', elements: 100,
+  viewport: { w: 1440, h: 900 }, headings: [], fontSources: [], fontFaces: [],
+  raw: {
+    family: { 'Arial, sans-serif': 100 }, size: { '16px': 100 }, weight: { '400': 100 },
+    lineHeight: {}, tracking: {}, ink: { 'rgb(240, 240, 240)': 100 },
+    bg: { 'rgb(17, 17, 17)': 8000 }, radius: {}, shadow: {}, borderWidth: {},
+    borderColor: {}, duration: { '0.2s': 10 }, easing: { 'ease': 10 },
+    space: { '8px': 50, '16px': 30 }
+  }
+};
+
 console.log('\ndesign-machine — tests\n');
 
 test('toHex convertit rgb en hexadecimal', () => {
@@ -300,6 +312,50 @@ test('une panne ferme la porte — skip vaut pour un outil absent, pas pour une 
 });
 
 
+// --- volet sombre (paletteDark) ---
+
+// Contrat mixte : clair depuis B (blanc), sombre depuis D (#111111)
+const tokensMixte = merge(
+  [normalize(siteB, 'B'), normalize(siteD, 'D')],
+  parseMap('typography=D,palette=B,spatial=D,motion=D,surfaceStyle=D,paletteDark=D')
+);
+
+test('merge accepte paletteDark avec sa propre source et sa provenance', () => {
+  assert.equal(tokensMixte.paletteDark.background, '#111111');
+  assert.equal(tokensMixte.palette.background, '#ffffff');
+  assert.equal(tokensMixte.provenance.paletteDark.source, 'D');
+});
+
+test('verify en schema sombre juge contre le volet sombre, pas le clair', () => {
+  // Rendu sombre (#111) : NON CONFORME contre le contrat clair (blanc)…
+  const clair = verify(siteD, tokensMixte);
+  assert.equal(clair.pass, false);
+  assert.ok(clair.findings.some(f => f.rule === 'undeclared-background'));
+  // …CONFORME contre le volet sombre.
+  const sombre = verify(siteD, tokensMixte, { scheme: 'dark' });
+  assert.equal(sombre.pass, true, JSON.stringify(sombre.findings));
+});
+
+test('verify en sombre REFUSE un contrat sans volet, plutot que juger faux', () => {
+  const sansVolet = merge([normalize(siteD, 'D')], parseMap('typography=D,palette=D,spatial=D,motion=D,surfaceStyle=D'));
+  assert.throws(() => verify(siteD, sansVolet, { scheme: 'dark' }), /volet sombre/);
+});
+
+test('tokens.css emet le media query et data-theme pour le volet sombre', () => {
+  const css = renderCss(tokensMixte);
+  assert.ok(css.includes('@media (prefers-color-scheme: dark)'));
+  assert.ok(css.includes(':root[data-theme="dark"]'));
+  assert.ok(css.includes('--bg: #111111'));
+  assert.ok(!renderCss(tokensB).includes('prefers-color-scheme'), 'pas de volet = pas de media query');
+});
+
+test('le MASTER porte le volet sombre et sa provenance', () => {
+  const md = renderMaster(tokensMixte);
+  assert.ok(md.includes('Volet sombre'));
+  assert.ok(md.includes('| paletteDark | D'));
+});
+
+
 // --- couche motion etendue ---
 
 const motionExtFixture = {
@@ -446,6 +502,15 @@ test('export dart et ts portent le meme contrat que tokens.json', () => {
   // rounded-full de Tailwind : une pilule, pas 33 554 432px
   const pill = renderTs({ ...tokensB, surfaceStyle: { radii: ['3.35544e+07px'] } });
   assert.ok(pill.includes('9999'));
+});
+
+test('les projections natives portent le volet sombre, et lui seul', () => {
+  const dart = renderDart(tokensMixte);
+  assert.ok(dart.includes('DesignTokensDark'));
+  assert.ok(dart.includes('Color(0xFF111111)'));
+  assert.ok(renderTs(tokensMixte).includes('"dark"'));
+  assert.ok(!renderDart(tokensB).includes('DesignTokensDark'), 'pas de volet = pas de classe sombre');
+  assert.ok(!renderTs(tokensB).includes('"dark"'));
 });
 
 test('scanContent attrape hex, rgb et Color(0x…) avec leur ligne', () => {

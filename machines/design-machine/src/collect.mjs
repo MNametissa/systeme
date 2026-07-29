@@ -20,7 +20,11 @@ export function collector() {
   const headings = [];
   let counted = 0;
 
-  for (const el of document.querySelectorAll('body *')) {
+  // Le body lui-meme entre dans la mesure : c'est LE fond dominant. L'exclure
+  // faisait elire la plus grande carte comme « fond » et rendait invisible une
+  // page sans autre porteur de fond (prouve sur fixture en schema sombre).
+  for (const el of [document.body, ...document.querySelectorAll('body *')]) {
+    if (!el) continue;
     const r = el.getBoundingClientRect();
     if (r.width < 4 || r.height < 4) continue;
 

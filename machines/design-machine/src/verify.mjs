@@ -8,6 +8,19 @@ const SEV = { fail: 'FAIL', warn: 'WARN' };
 export function verify(payload, tokens, opts = {}) {
   const bgTolerance = opts.bgTolerance ?? 0.02;
   const sizeTolerance = opts.sizeTolerance ?? 1;
+  // En schema sombre, la palette de reference est le volet sombre du contrat.
+  // Sans volet, on REFUSE : juger un rendu sombre contre la palette claire
+  // produirait un verdict faux dans les deux sens.
+  let pal = tokens.palette;
+  if (opts.scheme === 'dark') {
+    if (!tokens.paletteDark) {
+      throw new Error(
+        'Aucun volet sombre (paletteDark) au contrat. Extraire une source en ' +
+        '--scheme dark puis re-merger avec paletteDark=<label>.'
+      );
+    }
+    pal = tokens.paletteDark;
+  }
   const observed = normalize(payload, 'cible');
   const findings = [];
 
@@ -30,7 +43,7 @@ export function verify(payload, tokens, opts = {}) {
 
   // 3. Fonds non declares au-dela du seuil de surface
   const declared = new Set(
-    [tokens.palette?.background, ...(tokens.palette?.surfaces || []), ...(tokens.palette?.accents || [])]
+    [pal?.background, ...(pal?.surfaces || []), ...(pal?.accents || [])]
       .filter(Boolean).map(c => c.split(' / ')[0].toLowerCase())
   );
   const backgrounds = observed.palette.evidence.backgrounds;

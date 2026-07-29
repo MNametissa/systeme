@@ -31,6 +31,7 @@ export function renderMaster(t) {
   for (const layer of ['typography', 'palette', 'spatial', 'motion', 'surfaceStyle']) {
     lines.push(`| ${layer} | ${src(layer)} |`);
   }
+  if (t.paletteDark) lines.push(`| paletteDark | ${src('paletteDark')} |`);
   lines.push('');
 
   const ty = t.typography || {};
@@ -55,6 +56,17 @@ export function renderMaster(t) {
   lines.push(`- Encre : \`${pa.ink ?? '—'}\``);
   lines.push(`- Attenue : \`${pa.muted ?? '—'}\``);
   lines.push(`- Accents : ${list((pa.accents || []).map(c => `\`${c}\``))}`);
+  const pd = t.paletteDark;
+  if (pd) {
+    lines.push('');
+    lines.push('### Volet sombre');
+    lines.push('');
+    lines.push(`- Fond dominant : \`${pd.background ?? '—'}\``);
+    lines.push(`- Surfaces : ${list((pd.surfaces || []).map(c => `\`${c}\``))}`);
+    lines.push(`- Encre : \`${pd.ink ?? '—'}\``);
+    lines.push(`- Attenue : \`${pd.muted ?? '—'}\``);
+    lines.push(`- Accents : ${list((pd.accents || []).map(c => `\`${c}\``))}`);
+  }
   lines.push('');
 
   const sp = t.spatial || {};
@@ -133,5 +145,24 @@ export function renderCss(t) {
   (su.shadows || []).slice(0, 2).forEach((s, i) => l.push(`  --shadow-${i}: ${s};`));
 
   l.push('}');
+
+  const pd = t.paletteDark;
+  if (pd) {
+    const overrides = [];
+    if (pd.background) overrides.push(`  --bg: ${pd.background.split(' / ')[0]};`);
+    (pd.surfaces || []).forEach((c, i) => overrides.push(`  --surface-${i + 1}: ${c.split(' / ')[0]};`));
+    if (pd.ink) overrides.push(`  --ink: ${pd.ink.split(' / ')[0]};`);
+    if (pd.muted) overrides.push(`  --ink-muted: ${pd.muted.split(' / ')[0]};`);
+    (pd.accents || []).forEach((c, i) => overrides.push(`  --accent-${i + 1}: ${c.split(' / ')[0]};`));
+    l.push('');
+    l.push('@media (prefers-color-scheme: dark) {');
+    l.push('  :root {');
+    overrides.forEach(o => l.push('  ' + o));
+    l.push('  }');
+    l.push('}');
+    l.push(':root[data-theme="dark"] {');
+    overrides.forEach(o => l.push(o));
+    l.push('}');
+  }
   return l.join('\n');
 }

@@ -41,6 +41,9 @@ Ne proposer aucune direction visuelle. Obtenir du demandeur, une question à la 
    composent pas (intersection de couches, refusé par `dm merge`).
 5. **Les contraintes** : viewport(s) visé(s), mode sombre ou non, polices
    imposées ou sous licence, nature du livrable (app, landing, dashboard).
+   Mode sombre voulu → extraire aussi en `--scheme dark` (source possiblement
+   différente) et affecter `paletteDark=<label>` au merge : la porte jugera
+   alors les DEUX schémas.
 
 Puis dérouler, sans réinventer :
 

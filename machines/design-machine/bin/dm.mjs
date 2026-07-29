@@ -21,14 +21,18 @@ const write = (path, content) => {
 const USAGE = `
 design-machine — extraire, composer, verifier
 
-  dm extract <url> --label A [--motion] [--out sources/A.json] [--headed] [--screenshot a.png]
+  dm extract <url> --label A [--motion] [--scheme dark] [--out sources/A.json] [--headed] [--screenshot a.png]
       Ouvre l'url, lit les computed styles du DOM rendu, ecrit les tokens normalises.
       --motion : capture aussi keyframes, loaders, apparitions au scroll, survols
       mesures — et SIGNALE le mouvement JS non instrumentable (rAF) sans l'estimer.
+      --scheme dark|light : force prefers-color-scheme — extraire le theme sombre
+      d'une source se fait en la capturant en sombre (label distinct, ex. A-dark).
 
-  dm merge --sources sources/ --map typography=A,palette=B,spatial=B,motion=C,surfaceStyle=A
+  dm merge --sources sources/ --map typography=A,palette=B,spatial=B,motion=C,surfaceStyle=A[,paletteDark=D]
            [--out design-system/]
       Compose une couche par source. Ecrit MASTER.md, tokens.css, tokens.json.
+      paletteDark (optionnel) : le volet sombre de la palette — sa source peut
+      differer du clair. tokens.css emet alors le media query + [data-theme].
 
   dm design-md [--north-star "..."] [--out DESIGN.md]
       Derive DESIGN.md (format Impeccable, six sections) et .impeccable/design.json
@@ -38,8 +42,9 @@ design-machine — extraire, composer, verifier
       Genere les derogations du detecteur Impeccable a partir du MASTER,
       via sa propre CLI. Une police declaree n'est pas de la slop.
 
-  dm verify <url> [--master design-system/tokens.json] [--json] [--warn-only]
-      Compare un rendu au MASTER. Sortie 1 si non conforme.
+  dm verify <url> [--scheme dark] [--master design-system/tokens.json] [--json] [--warn-only]
+      Compare un rendu au MASTER. Sortie 1 si non conforme. --scheme dark juge
+      contre le volet paletteDark — REFUS explicite si le contrat n'en a pas.
 
   dm compare <url-source> <url-rendu> [--json] [--warn-only]
       Compare la DENSITE mesuree : animes/visibles, boucles infinies, rotations,
@@ -65,6 +70,8 @@ design-machine — extraire, composer, verifier
 
   dm gate [<url>] [--json] [--warn-only] [--no-impeccable]
       Porte unifiee : dm verify + impeccable detect, un seul verdict.
+      Si le contrat porte un volet paletteDark, verify tourne dans LES DEUX
+      schemas — conforme en clair et casse en sombre ferme la porte.
       Une etape absente (outil non installe) est ignoree ; une panne ferme.
 
   Couches composables : typography, palette, spatial, motion, surfaceStyle
@@ -85,6 +92,7 @@ async function main() {
       headed: !!flag('headed', false),
       motion: !!flag('motion', false),
       mobile: !!flag('mobile', false),
+      scheme: typeof flag('scheme') === 'string' ? flag('scheme') : undefined,
       screenshot: typeof flag('screenshot') === 'string' ? flag('screenshot') : undefined,
       fullPage: !!flag('full-page', false),
       waitFor: typeof flag('wait-for') === 'string' ? flag('wait-for') : undefined,
@@ -140,18 +148,32 @@ async function main() {
     if (!existsSync(masterPath)) {
       steps.push({ name: 'dm verify', status: 'skip', reason: `${masterPath} absent` });
     } else {
+      let tokens = null;
+      const baseOpts = {
+        mobile: !!flag('mobile', false),
+        width: flag('width') ? Number(flag('width')) : undefined
+      };
       try {
-        const tokens = JSON.parse(readFileSync(masterPath, 'utf8'));
+        tokens = JSON.parse(readFileSync(masterPath, 'utf8'));
         const { capture } = await import('../src/extract.mjs');
-        const res = verify(await capture(target, {
-          mobile: !!flag('mobile', false),
-          width: flag('width') ? Number(flag('width')) : undefined
-        }), tokens);
+        const res = verify(await capture(target, baseOpts), tokens);
         steps.push({ name: 'dm verify', status: res.pass ? 'pass' : 'fail', detail: formatReport(res) });
       } catch (e) {
         // Panne, pas absence : tokens corrompus, capture qui leve, timeout.
         // Ne pas pouvoir verifier ferme la porte.
         steps.push({ name: 'dm verify', status: 'error', reason: e.message });
+      }
+      // Un volet sombre au contrat = le sombre est aussi sous contrat.
+      // Conforme en clair et casse en sombre doit fermer la porte.
+      if (tokens?.paletteDark) {
+        try {
+          const { capture } = await import('../src/extract.mjs');
+          const payload = await capture(target, { ...baseOpts, scheme: 'dark' });
+          const res = verify(payload, tokens, { scheme: 'dark' });
+          steps.push({ name: 'dm verify (sombre)', status: res.pass ? 'pass' : 'fail', detail: formatReport(res) });
+        } catch (e) {
+          steps.push({ name: 'dm verify (sombre)', status: 'error', reason: e.message });
+        }
       }
     }
 
@@ -181,7 +203,8 @@ async function main() {
     const capOpts = {
       intensity: true,
       mobile: !!flag('mobile', false),
-      width: flag('width') ? Number(flag('width')) : undefined
+      width: flag('width') ? Number(flag('width')) : undefined,
+      scheme: typeof flag('scheme') === 'string' ? flag('scheme') : undefined
     };
     console.error(`  ouverture ${srcUrl}`);
     const a = await capture(srcUrl, capOpts);
@@ -206,6 +229,7 @@ async function main() {
       intensity: true,
       mobile: !!flag('mobile', false),
       width: flag('width') ? Number(flag('width')) : undefined,
+      scheme: typeof flag('scheme') === 'string' ? flag('scheme') : undefined,
       screenshot: typeof flag('screenshot') === 'string' ? flag('screenshot') : undefined,
       fullPage: !!flag('full-page', false)
     });
@@ -236,11 +260,13 @@ async function main() {
     if (!target) { console.error(USAGE); return 2; }
     const tokens = JSON.parse(readFileSync(flag('master', 'design-system/tokens.json'), 'utf8'));
     const { capture } = await import('../src/extract.mjs');
+    const scheme = typeof flag('scheme') === 'string' ? flag('scheme') : undefined;
     const payload = await capture(target, {
       mobile: !!flag('mobile', false),
-      width: flag('width') ? Number(flag('width')) : undefined
+      width: flag('width') ? Number(flag('width')) : undefined,
+      scheme
     });
-    const res = verify(payload, tokens);
+    const res = verify(payload, tokens, { scheme });
     console.log(flag('json', false) ? JSON.stringify(res, null, 2) : formatReport(res));
     return res.pass || flag('warn-only', false) ? 0 : 1;
   }

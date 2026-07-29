@@ -40,6 +40,21 @@ export function renderDart(t) {
   (mo.durations || []).forEach((d, i) => l.push(`  static const Duration dur${i} = Duration(milliseconds: ${Math.round(d.ms)});`));
   (su.radii || []).forEach((r, i) => l.push(`  static const double radius${i} = ${radius(r)};`));
   l.push('}');
+  const pd = t.paletteDark;
+  if (pd) {
+    l.push('');
+    l.push('abstract final class DesignTokensDark {');
+    const dcolor = (name, hex) => {
+      const d = hexToDart(hex);
+      if (d) l.push(`  static const Color ${name} = Color(${d});`);
+    };
+    if (pd.background) dcolor('bg', pd.background);
+    if (pd.ink) dcolor('ink', pd.ink);
+    if (pd.muted) dcolor('inkMuted', pd.muted);
+    (pd.surfaces || []).forEach((c, i) => dcolor(`surface${i + 1}`, c));
+    (pd.accents || []).forEach((c, i) => dcolor(`accent${i + 1}`, c));
+    l.push('}');
+  }
   return l.join('\n') + '\n';
 }
 
@@ -57,7 +72,16 @@ export function renderTs(t) {
     spaceUnit: sp.unit ?? null,
     durationsMs: (mo.durations || []).map(d => Math.round(d.ms)),
     easings: mo.easings || [],
-    radii: (su.radii || []).map(radius)
+    radii: (su.radii || []).map(radius),
+    ...(t.paletteDark ? {
+      dark: {
+        bg: t.paletteDark.background ? strip(t.paletteDark.background) : null,
+        ink: t.paletteDark.ink ? strip(t.paletteDark.ink) : null,
+        inkMuted: t.paletteDark.muted ? strip(t.paletteDark.muted) : null,
+        surfaces: (t.paletteDark.surfaces || []).map(strip),
+        accents: (t.paletteDark.accents || []).map(strip)
+      }
+    } : {})
   };
   return `// Genere par design-machine le ${t.generatedAt}. Ne pas editer : dm export ts.\n` +
     `export const tokens = ${JSON.stringify(obj, null, 2)} as const;\n`;
