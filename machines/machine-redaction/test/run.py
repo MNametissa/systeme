@@ -429,7 +429,9 @@ if "Développements Spécifiques" not in r.stdout:
           f"(phase 4 de la fixture absente de la page 2) :\n{r.stdout[:300]}")
 if "Modules Spécifiques" in r.stdout:
     echec("remplir: sommaire", "le sommaire du PDF contient encore le cache périmé d'origine")
-ok("remplir: sommaire réel — champs TOC rafraîchis, phases présentes, cache purgé")
+if re.search(r"Sommaire ?\.{3,}", r.stdout):
+    echec("remplir: sommaire", "le sommaire se liste lui-même")
+ok("remplir: sommaire réel — champs rafraîchis, phases présentes, pas d'auto-entrée")
 
 r = subprocess.run([sys.executable, str(REMPLIR), str(gabarit), str(ctx_file),
                     str(livrable)], capture_output=True, text=True)
@@ -561,6 +563,29 @@ for att in attendus_typo:
     if att not in txt_t:
         echec("toilettage", f"correction absente : {att!r} dans {txt_t!r}")
 ok("toilettage: doubles espaces, insécables et guillemets corrigés")
+
+# ── 22. Finitions du gabarit PTF : alignements, marges, solidarité ────────
+xml_gab = zipfile.ZipFile(gabarit).read("word/document.xml").decode("utf-8")
+i = xml_gab.find("{{ item.cost }}")
+pPr_cout = xml_gab[xml_gab.rfind("<w:p ", 0, i):i]
+if 'w:jc w:val="right"' not in pPr_cout:
+    echec("finitions", "montants du tableau financier non alignés à droite")
+i = xml_gab.find("{{ item.count }}")
+pPr_count = xml_gab[xml_gab.rfind("<w:p ", 0, i):i]
+if 'w:jc w:val="center"' not in pPr_count:
+    echec("finitions", "effectifs du tableau équipe non centrés")
+m = re.search(r'<w:pgMar[^/]*w:footer="(\d+)"[^/]*/>|<w:pgMar[^/]*/>', xml_gab)
+footer_twips = int(re.search(r'w:footer="(\d+)"', m.group(0)).group(1))
+if footer_twips < 700:
+    echec("finitions", f"zone de pied de page trop courte ({footer_twips} twips) — "
+          "le corps déborde dans le footer")
+i = xml_gab.find("{{ item.solution_name }}")
+if i == -1:
+    i = xml_gab.find("{{ solution_name }}")
+pPr_sol = xml_gab[xml_gab.rfind("<w:p ", 0, i):i]
+if "w:keepNext" not in pPr_sol:
+    echec("finitions", "titre de solution orphelin possible (keepNext absent)")
+ok("finitions: montants à droite, effectifs centrés, footer élargi, titres solidaires")
 
 # ── 20. AF-xxx : chaque valeur chiffrée de la base de faits a une source ──
 AF = RACINE / "instruments" / "af_contexte.py"
