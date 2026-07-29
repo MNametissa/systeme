@@ -189,8 +189,11 @@ et **échoue bruyamment** au lieu de laisser la machine s'installer cassée.
       gestes n'ont plus besoin de `markitdown`/`python-pptx` (ancienne
       machine), ni des 4 skills marketplace du vieux routeur — R8 devient
       sans objet pour la nouvelle machine.
-- [ ] **Design** : Chromium trouvable, `design-system/tokens.json` présent,
-      `impeccable` disponible ou explicitement absent — sa place naturelle
+- [x] **Design** : `dm doctor` (2026-07-29) — Node, Chromium, skill dans le BON
+      profil (mauvais profil nommé s'il est détecté), impeccable/accesslint
+      présents ou explicitement absents avec le geste, contrat du projet.
+      Sortie 1 si un requis manque. + `npm run test:e2e` (7 passes Chromium sur
+      fixtures locales) et `dm lint` enchaîné dans le hook avant la porte rendue. — sa place naturelle
       est `dm doctor`, pas ici
 - [ ] **Noyau** (N3) : outils des recettes (`vulture`, `madge`, `knip`,
       `pylint`) — à traiter avec T8

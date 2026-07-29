@@ -14,7 +14,20 @@ DM="${DM_BIN:-dm}"
 # Rien a verifier tant que le contrat n'existe pas.
 [ -f "$MASTER" ] || exit 0
 
-# Serveur eteint : sortie silencieuse.
+# Porte statique d'abord : rapide, sans navigateur, couvre aussi les projets
+# sans serveur de dev (Flutter, natif). Code 2 (aucun fichier) = silencieux.
+LINT_OUT="$($DM lint . 2>&1)"
+if [ $? -eq 1 ]; then
+  {
+    echo "$LINT_OUT"
+    echo ""
+    echo "Consommer les tokens (tokens.css / tokens.ts / tokens.dart)."
+    echo "Un litteral assume se marque dm-lint-ignore sur sa ligne, avec sa raison."
+  } >&2
+  exit 2
+fi
+
+# Serveur eteint : la porte rendue ne peut pas tourner, sortie silencieuse.
 if ! curl -sSf -o /dev/null --max-time 2 "$DEV_URL" 2>/dev/null; then
   exit 0
 fi

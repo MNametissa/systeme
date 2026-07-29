@@ -7,7 +7,8 @@
     "dm": "./bin/dm.mjs"
   },
   "scripts": {
-    "test": "node test/run.mjs"
+    "test": "node test/run.mjs",
+    "test:e2e": "node test/e2e.mjs"
   },
   "dependencies": {
     "puppeteer-core": "^24.0.0"

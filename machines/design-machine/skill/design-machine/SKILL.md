@@ -8,8 +8,9 @@ description: Machine de design — extraire des tokens de sites réels, composer
 La direction visuelle vient de sites réels extraits, jamais du goût du modèle.
 
 La commande `dm` est dans le PATH (`~/.local/bin/dm`) ; le code vit dans
-`~/development/systeme/machines/design-machine`. Vérifier : `dm help`.
-Préconditions : Node ≥ 20, Chrome ou Chromium installé.
+`~/development/systeme/machines/design-machine`. Au moindre doute sur les
+préconditions (machine neuve, comportement étrange) : `dm doctor` — il nomme
+ce qui manque et le geste pour chaque absent.
 
 ## Si `design-system/MASTER.md` existe
 

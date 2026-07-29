@@ -579,6 +579,29 @@ test('parseArgs survit aux valeurs repetees', () => {
   assert.equal(r.flags.out, 'sources/A.json');
 });
 
+// --- doctor ---
+
+const { doctorExitCode, formatDoctor } = await import('../src/doctor.mjs');
+
+test('doctor echoue seulement sur un REQUIS manquant', () => {
+  const ok = [{ name: 'Node', ok: true, requis: true, detail: '' },
+    { name: 'impeccable', ok: false, requis: false, detail: 'geste' }];
+  assert.equal(doctorExitCode(ok), 0);
+  const casse = [{ name: 'Chromium', ok: false, requis: true, detail: 'geste' }];
+  assert.equal(doctorExitCode(casse), 1);
+});
+
+test('doctor nomme chaque manque avec son geste', () => {
+  const out = formatDoctor([
+    { name: 'Chromium', ok: false, requis: true, detail: 'sudo apt install chromium' },
+    { name: 'accesslint (optionnel)', ok: false, requis: false, detail: 'claude plugin install…' }
+  ]);
+  assert.ok(out.includes('MANQUE'));
+  assert.ok(out.includes('sudo apt install chromium'));
+  assert.ok(out.includes('REQUISE(S) manquante(s)'));
+});
+
+
 // D12 a recidive deux fois (17→26, 48→55) : le compte annonce est teste.
 // Ce test doit rester LE DERNIER : le total attendu l'inclut.
 const { readFileSync: rf } = await import('node:fs');

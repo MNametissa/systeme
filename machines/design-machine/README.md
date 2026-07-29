@@ -43,8 +43,14 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test        # 56 tests sur les parties deterministes, sans navigateur
+npm test            # 58 tests sur les parties deterministes, sans navigateur
+npm run test:e2e    # 7 passes reelles Chromium sur fixtures locales, zero reseau
+dm doctor           # preconditions nommees : Node, Chromium, profil, options
 ```
+
+`dm doctor` echoue bruyamment (sortie 1) si un element REQUIS manque, et donne
+le geste exact pour chaque absent — une machine ne s'installe jamais cassee en
+silence.
 
 ---
 
@@ -206,6 +212,9 @@ Le hook est cable en `Stop` — fin de tour — pas en `PostToolUse` : lancer
 Chromium a chaque ecriture de fichier rend la porte insupportable, et une porte
 insupportable finit desactivee.
 
+Il enchaine deux portes : `dm lint` d'abord (statique, rapide, tourne meme sans
+serveur de dev — le cas Flutter), puis `dm gate` si un serveur repond.
+
 Il appelle `dm gate`, qui enchaine `dm verify` et `impeccable detect` et rend
 **un seul verdict**. Trois hooks qui parlent chacun dans leur coin, c'est trois
 fois le bruit et aucune decision consolidee.
@@ -325,7 +334,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            56 tests, sans navigateur ni Impeccable
+test/run.mjs            58 tests, sans navigateur ni Impeccable
 ```
 
 MIT.

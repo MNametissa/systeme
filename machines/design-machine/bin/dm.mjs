@@ -59,6 +59,11 @@ design-machine — extraire, composer, verifier
       Projette le contrat en natif : tokens.dart (Flutter), tokens.ts
       (React Native, Electron, Ionic). Derives, regeneres, jamais edites.
 
+  dm doctor
+      Preconditions nommees, echec bruyant : Node, Chromium, skill dans le BON
+      profil, impeccable/accesslint presents ou explicitement absents, contrat
+      du projet. Sortie 1 si un element requis manque.
+
   dm lint <dir> [--json]
       Porte statique : enumere TOUT litteral de couleur (#hex, rgb(), hsl(),
       Color(0x…)) hors fichiers tokens/theme. Pour les stacks dont le rendu ne
@@ -244,6 +249,13 @@ async function main() {
     if (target === 'dart') { write(flag('out', 'design-system/tokens.dart'), renderDart(tokens)); return 0; }
     if (target === 'ts') { write(flag('out', 'design-system/tokens.ts'), renderTs(tokens)); return 0; }
     console.error(USAGE); return 2;
+  }
+
+  if (cmd === 'doctor') {
+    const { collectDoctor, doctorExitCode, formatDoctor } = await import('../src/doctor.mjs');
+    const items = collectDoctor();
+    console.log(flag('json', false) ? JSON.stringify(items, null, 2) : formatDoctor(items));
+    return doctorExitCode(items);
   }
 
   if (cmd === 'lint') {
