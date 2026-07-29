@@ -380,9 +380,9 @@ r = subprocess.run([sys.executable, str(VARIABLES), str(gabarit)],
                    capture_output=True, text=True)
 if r.returncode != 0:
     echec("variables", f"code {r.returncode}\n{r.stdout}{r.stderr}")
-if "14 variables" not in r.stdout or "project_phases" not in r.stdout:
+if "15 variables" not in r.stdout or "mission_summary" not in r.stdout:
     echec("variables: énumération", r.stdout)
-ok("variables: 14 variables du gabarit PTF énumérées")
+ok("variables: 15 variables du gabarit PTF énumérées (mission_summary comprise)")
 
 ctx_ampute = dict(contexte)
 del ctx_ampute["date"]
@@ -536,6 +536,31 @@ lien = faux_home / ".claude-mecid" / "skills" / "machine-redaction"
 if not lien.is_symlink() or not (lien / "SKILL.md").read_text() == skill_txt:
     echec("install", "lien absent du bon profil ou contenu divergent")
 ok("install: lien symbolique au bon profil (~/.claude-mecid/skills), idempotent")
+
+# ── 21. Toilettage typographique : espaces doubles, insécables, guillemets ─
+TOILETTE = RACINE / "instruments" / "toiletter_gabarit.py"
+sale = tmp / "typo-sale.docx"
+d = docx.Document()
+d.add_paragraph("Un montant de  22 000 000  (vingt-deux millions) FCFA.")
+d.add_paragraph("permettant de : rien")
+d.add_paragraph("la transformation digitale; elles la mènent.")
+d.add_paragraph("« citation »")
+d.save(str(sale))
+r = subprocess.run([sys.executable, str(TOILETTE), str(sale), str(tmp / "typo-propre.docx")],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    echec("toilettage", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+txt_t = textes_docx(tmp / "typo-propre.docx")["word/document.xml"]
+attendus_typo = [
+    "de 22 000 000 (vingt-deux millions)",
+    "permettant de : rien",
+    "digitale ; elles",
+    "« citation »",
+]
+for att in attendus_typo:
+    if att not in txt_t:
+        echec("toilettage", f"correction absente : {att!r} dans {txt_t!r}")
+ok("toilettage: doubles espaces, insécables et guillemets corrigés")
 
 # ── 20. AF-xxx : chaque valeur chiffrée de la base de faits a une source ──
 AF = RACINE / "instruments" / "af_contexte.py"

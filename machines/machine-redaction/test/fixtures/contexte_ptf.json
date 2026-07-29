@@ -22,6 +22,7 @@
     { "need_title": "Gestion des ventes", "need_description": "devis, commandes, facturation" },
     { "need_title": "Gestion des stocks", "need_description": "entrepôts, inventaires, traçabilité" }
   ],
+  "mission_summary": "le déploiement d'un ERP ainsi que la formation et l'accompagnement des utilisateurs pour une adoption optimale",
   "solution_name": "Odoo 17 Community",
   "solution_description": "ERP modulaire open source couvrant achats, ventes, stocks et comptabilité.",
   "project_phases": [
