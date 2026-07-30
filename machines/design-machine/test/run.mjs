@@ -712,7 +712,7 @@ const { buildPack, applyPack } = await import('../src/pack.mjs');
 
 test('pack -> unpack restitue le contrat a l identique et regenere les derives', () => {
   const src = normalize(siteB, 'B');
-  const pack = buildPack({ tokens: tokensB, sources: [src], northStar: 'Le comptoir clair' });
+  const pack = buildPack({ tokens: tokensB, sources: [src], northStar: 'Le comptoir clair', notes: '# Grammaire' });
   const { files, warnings } = applyPack(JSON.parse(JSON.stringify(pack)));
   const byPath = Object.fromEntries(files.map(f => [f.path, f.content]));
   assert.deepEqual(JSON.parse(byPath['design-system/tokens.json']), JSON.parse(JSON.stringify(tokensB)),
@@ -736,6 +736,18 @@ test('un paquet sans sources ou sans North Star le dit, sans bloquer', () => {
   const { warnings } = applyPack(buildPack({ tokens: tokensB, sources: [], northStar: null }));
   assert.ok(warnings.some(w => w.includes('sans ses preuves')));
   assert.ok(warnings.some(w => w.includes('North Star')));
+  assert.ok(warnings.some(w => w.includes('grammaire')), 'le trou des regles de composition est nomme');
+});
+
+test('la grammaire (NOTES.md) voyage dans le pack et ressort telle quelle', () => {
+  const grammaire = '# Grammaire\n\n- Profondeur = blocs pleins decales, jamais box-shadow.\n';
+  const { files } = applyPack(buildPack({ tokens: tokensB, sources: [], northStar: null, notes: grammaire }));
+  const notes = files.find(f => f.path === 'design-system/NOTES.md');
+  assert.equal(notes.content, grammaire);
+  // retro-compatibilite : un pack v1 sans notes garde un checksum valide
+  const ancien = buildPack({ tokens: tokensB, sources: [], northStar: null });
+  delete ancien.notes;
+  assert.doesNotThrow(() => applyPack(ancien));
 });
 
 

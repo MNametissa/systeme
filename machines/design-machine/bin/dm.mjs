@@ -287,11 +287,14 @@ async function main() {
     let northStar = null;
     try { northStar = JSON.parse(readFileSync('.impeccable/design.json', 'utf8')).northStar ?? null; }
     catch { /* pas de DESIGN.md derive ici */ }
+    let notes;
+    try { notes = readFileSync('design-system/NOTES.md', 'utf8'); }
+    catch { /* pas de grammaire deposee */ }
     const { buildPack } = await import('../src/pack.mjs');
-    const pack = buildPack({ tokens, sources, northStar });
+    const pack = buildPack({ tokens, sources, northStar, notes });
     const out = flag('out', 'design.pack.json');
     write(out, JSON.stringify(pack, null, 2));
-    console.error(`  ${sources.length} source(s) · North Star ${northStar ? 'inclus' : 'ABSENT'} · sha256 ${pack.checksum.slice(0, 12)}…`);
+    console.error(`  ${sources.length} source(s) · North Star ${northStar ? 'inclus' : 'ABSENT'} · grammaire ${notes ? 'incluse' : 'ABSENTE (design-system/NOTES.md)'} · sha256 ${pack.checksum.slice(0, 12)}…`);
     return 0;
   }
 

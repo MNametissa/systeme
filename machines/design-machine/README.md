@@ -44,7 +44,7 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test            # 70 tests sur les parties deterministes, sans navigateur
+npm test            # 71 tests sur les parties deterministes, sans navigateur
 npm run test:e2e    # 10 passes reelles Chromium sur fixtures locales, zero reseau
 dm doctor           # preconditions nommees : Node, Chromium, profil, options
 ```
@@ -264,10 +264,16 @@ dm unpack mon.design.json          # importe ailleurs, derives REGENERES
 ```
 
 Le paquet ne transporte que l'INDERIVABLE — le contrat (provenance comprise),
-les sources mesurees (les preuves), le North Star. MASTER.md, tokens.css et
-DESIGN.md se regenerent a l'import : transporter des derives, c'est laisser
-deux verites diverger en silence. Somme de controle sha256 verifiee ; un
-contrat existant ne s'ecrase jamais sans `--force`.
+les sources mesurees (les preuves), le North Star, et la GRAMMAIRE du design
+(`design-system/NOTES.md` : effets valides, regles de composition — le
+jugement humain qui ne se regenere pas). MASTER.md, tokens.css et DESIGN.md
+se regenerent a l'import : transporter des derives, c'est laisser deux verites
+diverger en silence. Somme de controle sha256 verifiee ; un contrat existant
+ne s'ecrase jamais sans `--force`.
+
+Ne voyagent PAS, deliberement : les captures d'ecran (re-capturables depuis la
+provenance) et les images de reference `refs/` (actifs tiers — on derive des
+regles, on ne redistribue pas des actifs).
 
 A ne pas confondre avec `dm export dart|ts` : export = projections de
 CONSOMMATION du contrat courant ; pack/unpack = TRANSPORT du design entier
@@ -361,7 +367,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            70 tests, sans navigateur ni Impeccable
+test/run.mjs            71 tests, sans navigateur ni Impeccable
 ```
 
 MIT.

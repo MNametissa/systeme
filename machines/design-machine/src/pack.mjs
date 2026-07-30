@@ -16,9 +16,13 @@ export const PACK_VERSION = 1;
 
 const sha = payload => createHash('sha256').update(JSON.stringify(payload)).digest('hex');
 
-export function buildPack({ tokens, sources = [], northStar = null }) {
+// `notes` : la GRAMMAIRE du design (effets valides, decisions de composition,
+// regles de motion) — de l'inderivable pur, lu depuis design-system/NOTES.md.
+// Optionnel et retro-compatible : absent, le checksum est identique aux packs v1
+// anterieurs (undefined disparait de la serialisation).
+export function buildPack({ tokens, sources = [], northStar = null, notes = undefined }) {
   if (!tokens) throw new Error('Aucun contrat (tokens.json) — rien a exporter.');
-  const payload = { tokens, sources, northStar };
+  const payload = { tokens, sources, northStar, notes };
   return {
     format: PACK_FORMAT,
     version: PACK_VERSION,
@@ -36,8 +40,8 @@ export function applyPack(pack) {
   if (pack.version !== PACK_VERSION) {
     throw new Error(`Version de paquet ${pack.version} non geree (machine en v${PACK_VERSION}).`);
   }
-  const { tokens, sources = [], northStar = null } = pack;
-  if (sha({ tokens, sources, northStar }) !== pack.checksum) {
+  const { tokens, sources = [], northStar = null, notes = undefined } = pack;
+  if (sha({ tokens, sources, northStar, notes }) !== pack.checksum) {
     throw new Error('Somme de controle invalide : paquet altere ou tronque — import refuse.');
   }
 
@@ -58,5 +62,7 @@ export function applyPack(pack) {
   } else {
     warnings.push('pas de North Star dans le paquet : DESIGN.md non regenere');
   }
+  if (notes) files.push({ path: 'design-system/NOTES.md', content: notes });
+  else warnings.push('pas de grammaire (design-system/NOTES.md) : le pack transporte le contrat, pas les regles de composition');
   return { files, warnings };
 }
