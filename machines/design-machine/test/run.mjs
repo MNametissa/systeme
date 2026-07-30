@@ -706,6 +706,39 @@ test('invertPalette preserve les suffixes alpha', () => {
 });
 
 
+// --- import / export ---
+
+const { buildPack, applyPack } = await import('../src/pack.mjs');
+
+test('pack -> unpack restitue le contrat a l identique et regenere les derives', () => {
+  const src = normalize(siteB, 'B');
+  const pack = buildPack({ tokens: tokensB, sources: [src], northStar: 'Le comptoir clair' });
+  const { files, warnings } = applyPack(JSON.parse(JSON.stringify(pack)));
+  const byPath = Object.fromEntries(files.map(f => [f.path, f.content]));
+  assert.deepEqual(JSON.parse(byPath['design-system/tokens.json']), JSON.parse(JSON.stringify(tokensB)),
+    'le contrat traverse sans perte');
+  assert.equal(JSON.parse(byPath['sources/B.json']).label, 'B');
+  assert.ok(byPath['design-system/MASTER.md'].includes('## Provenance'), 'MASTER regenere');
+  assert.ok(byPath['design-system/tokens.css'].includes(':root'), 'css regenere');
+  assert.ok(byPath['DESIGN.md'].includes('Le comptoir clair'), 'North Star transporte');
+  assert.equal(warnings.length, 0);
+});
+
+test('un paquet altere ou d un format inconnu est REFUSE', () => {
+  const pack = buildPack({ tokens: tokensB, sources: [], northStar: null });
+  const altere = { ...pack, tokens: { ...pack.tokens, palette: { ...pack.tokens.palette, background: '#bad' } } };
+  assert.throws(() => applyPack(altere), /Somme de controle/);
+  assert.throws(() => applyPack({ format: 'autre-chose' }), /Format inconnu/);
+  assert.throws(() => applyPack({ format: 'design-machine/pack', version: 99 }), /non geree/);
+});
+
+test('un paquet sans sources ou sans North Star le dit, sans bloquer', () => {
+  const { warnings } = applyPack(buildPack({ tokens: tokensB, sources: [], northStar: null }));
+  assert.ok(warnings.some(w => w.includes('sans ses preuves')));
+  assert.ok(warnings.some(w => w.includes('North Star')));
+});
+
+
 // --- doctor ---
 
 const { doctorExitCode, formatDoctor } = await import('../src/doctor.mjs');

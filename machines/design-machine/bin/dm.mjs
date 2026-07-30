@@ -59,6 +59,15 @@ design-machine — extraire, composer, verifier
       Projette le contrat en natif : tokens.dart (Flutter), tokens.ts
       (React Native, Electron, Ionic). Derives, regeneres, jamais edites.
 
+  dm pack [--out <nom>.design.json]
+      Exporte le design en UN fichier portable : contrat (provenance comprise),
+      sources mesurees, North Star — l'inderivable seulement, somme de controle.
+
+  dm unpack <fichier> [--force]
+      Importe un design : verifie la somme de controle, ecrit sources/ et
+      tokens.json, REGENERE les derives (MASTER.md, tokens.css, DESIGN.md).
+      Un contrat existant ne s'ecrase pas sans --force.
+
   dm scheme <dark|light> [--force] [--master design-system/tokens.json]
       Derive le volet manquant depuis l'autre : teinte/saturation conservees
       (OKLab), clartes inversees, contrastes WCAG reproduits par dichotomie —
@@ -261,6 +270,45 @@ async function main() {
     if (target === 'dart') { write(flag('out', 'design-system/tokens.dart'), renderDart(tokens)); return 0; }
     if (target === 'ts') { write(flag('out', 'design-system/tokens.ts'), renderTs(tokens)); return 0; }
     console.error(USAGE); return 2;
+  }
+
+  if (cmd === 'pack') {
+    const masterPath = flag('master', 'design-system/tokens.json');
+    if (!existsSync(masterPath)) {
+      console.error(`  ${masterPath} absent — rien a exporter (dm extract puis dm merge d'abord).`);
+      return 2;
+    }
+    const tokens = JSON.parse(readFileSync(masterPath, 'utf8'));
+    const srcDir = flag('sources', 'sources');
+    const sources = existsSync(srcDir)
+      ? readdirSync(srcDir).filter(f => f.endsWith('.json'))
+          .map(f => JSON.parse(readFileSync(join(srcDir, f), 'utf8')))
+      : [];
+    let northStar = null;
+    try { northStar = JSON.parse(readFileSync('.impeccable/design.json', 'utf8')).northStar ?? null; }
+    catch { /* pas de DESIGN.md derive ici */ }
+    const { buildPack } = await import('../src/pack.mjs');
+    const pack = buildPack({ tokens, sources, northStar });
+    const out = flag('out', 'design.pack.json');
+    write(out, JSON.stringify(pack, null, 2));
+    console.error(`  ${sources.length} source(s) · North Star ${northStar ? 'inclus' : 'ABSENT'} · sha256 ${pack.checksum.slice(0, 12)}…`);
+    return 0;
+  }
+
+  if (cmd === 'unpack') {
+    const file = positional[0];
+    if (!file) { console.error(USAGE); return 2; }
+    const { applyPack } = await import('../src/pack.mjs');
+    const pack = JSON.parse(readFileSync(file, 'utf8'));
+    if (existsSync('design-system/tokens.json') && !flag('force', false)) {
+      console.error('  design-system/tokens.json existe deja — un import ne l\'ecrase pas. Relance avec --force si c\'est voulu.');
+      return 1;
+    }
+    const { files, warnings } = applyPack(pack);
+    for (const f of files) write(f.path, f.content);
+    for (const w of warnings) console.error(`  ! ${w}`);
+    console.error(`  importe (emballe le ${pack.packedAt}) — derives regeneres, pas transportes.`);
+    return 0;
   }
 
   if (cmd === 'scheme') {

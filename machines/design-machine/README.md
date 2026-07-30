@@ -44,8 +44,8 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test            # 67 tests sur les parties deterministes, sans navigateur
-npm run test:e2e    # 9 passes reelles Chromium sur fixtures locales, zero reseau
+npm test            # 70 tests sur les parties deterministes, sans navigateur
+npm run test:e2e    # 10 passes reelles Chromium sur fixtures locales, zero reseau
 dm doctor           # preconditions nommees : Node, Chromium, profil, options
 ```
 
@@ -256,6 +256,23 @@ dm merge --sources sources --map ...,paletteDark=A-dark
   Un derive n'est pas une mesure : si la source a un vrai theme oppose,
   l'extraire vaut toujours mieux.
 
+## Importer / exporter un design
+
+```bash
+dm pack --out mon.design.json      # exporte : contrat + sources + North Star
+dm unpack mon.design.json          # importe ailleurs, derives REGENERES
+```
+
+Le paquet ne transporte que l'INDERIVABLE — le contrat (provenance comprise),
+les sources mesurees (les preuves), le North Star. MASTER.md, tokens.css et
+DESIGN.md se regenerent a l'import : transporter des derives, c'est laisser
+deux verites diverger en silence. Somme de controle sha256 verifiee ; un
+contrat existant ne s'ecrase jamais sans `--force`.
+
+A ne pas confondre avec `dm export dart|ts` : export = projections de
+CONSOMMATION du contrat courant ; pack/unpack = TRANSPORT du design entier
+entre projets ou machines.
+
 ## Stacks non-web : Flutter, React Native, Electron, Ionic
 
 Le contrat est `tokens.json` — `tokens.css` n'en est qu'une projection. Deux
@@ -344,7 +361,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            67 tests, sans navigateur ni Impeccable
+test/run.mjs            70 tests, sans navigateur ni Impeccable
 ```
 
 MIT.

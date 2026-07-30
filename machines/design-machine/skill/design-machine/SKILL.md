@@ -86,6 +86,13 @@ Une panne (tokens corrompus, capture qui lève) ferme la porte ; seul un outil
 absent la laisse ouverte. Une dérive signalée se corrige en revenant aux tokens ;
 si la dérive est voulue, on régénère le MASTER — on ne contourne jamais la porte.
 
+## Transporter un design
+
+`dm pack` exporte le design entier (contrat + sources + North Star) en un
+fichier ; `dm unpack <fichier>` l'importe ailleurs et régénère les dérivés.
+Réutiliser un design existant = demander son `.design.json`, jamais recopier
+des valeurs à la main.
+
 ## Stacks non-web
 
 Electron/Ionic/PWA : chaîne complète sur le localhost de dev. React Native :

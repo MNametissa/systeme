@@ -123,6 +123,25 @@ test('palette : une capture d ecran devient une source de palette mesuree', () =
   assert.ok(r.stdout.includes('intensite visuelle'), 'le bloc pixels doit sortir');
 });
 
+test('pack -> unpack transporte le design dans un projet vierge', () => {
+  const p = dm('pack', '--out', 'export.design.json');
+  assert.equal(p.status, 0, p.stderr);
+  const vierge = join(dir, 'projet-vierge');
+  spawnSync('mkdir', ['-p', vierge]);
+  const u = spawnSync('node', [DM, 'unpack', join(dir, 'export.design.json')],
+    { encoding: 'utf8', cwd: vierge, timeout: 60000 });
+  assert.equal(u.status, 0, u.stdout + u.stderr);
+  const avant = readFileSync(join(dir, 'design-system/tokens.json'), 'utf8');
+  const apres = readFileSync(join(vierge, 'design-system/tokens.json'), 'utf8');
+  assert.equal(apres, avant, 'contrat identique a l octet');
+  assert.ok(readFileSync(join(vierge, 'design-system/tokens.css'), 'utf8').includes('prefers-color-scheme'),
+    'volet sombre regenere aussi');
+  // re-import sans --force : refus
+  const refus = spawnSync('node', [DM, 'unpack', join(dir, 'export.design.json')],
+    { encoding: 'utf8', cwd: vierge, timeout: 60000 });
+  assert.equal(refus.status, 1);
+});
+
 test('lint attrape un litteral hors tokens, ignore les fichiers theme', () => {
   writeFileSync(join(dir, 'app.dart'), 'final c = Color(0xFF112233);');
   writeFileSync(join(dir, 'tokens.dart'), 'final bg = Color(0xFF262626);');
