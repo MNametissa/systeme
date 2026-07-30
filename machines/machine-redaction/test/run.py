@@ -673,6 +673,69 @@ if r.returncode == 0 or "AF" not in r.stdout or sortie_af.exists():
           f"code {r.returncode}, fichier créé : {sortie_af.exists()}\n{r.stdout[:300]}")
 ok("remplir: base de faits non sourcée → refus, rien n'est écrit")
 
+# ── 24. Pont spec-kit → CDC : extraction et fermeture des exigences ───────
+PONT = RACINE / "instruments" / "spec_vers_contexte.py"
+SPEC = ICI / "fixtures" / "spec_kmerfoot.md"
+ctx_cdc_file = tmp / "cdc-depuis-spec.json"
+r = subprocess.run([sys.executable, str(PONT), str(SPEC), str(ctx_cdc_file)],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    echec("pont: extraction", f"code {r.returncode}\n{r.stdout}{r.stderr}")
+amorce = json.loads(ctx_cdc_file.read_text())
+if len(amorce["_spec"]["exigences"]) != 6:
+    echec("pont: extraction", f"{len(amorce['_spec']['exigences'])} exigences au lieu de 6")
+if amorce["_spec"]["exigences"][0]["id"] != "FR-001" \
+        or "ligne" not in amorce["_spec"]["exigences"][0]:
+    echec("pont: extraction", "exigence sans id ou sans ligne source")
+if "paris" not in amorce.get("project_name", "").lower():
+    echec("pont: extraction", f"project_name non repris du titre : {amorce.get('project_name')!r}")
+ok("pont: 6 exigences extraites avec ligne source, contexte amorcé")
+
+vide_spec = tmp / "sans-fr.md"
+vide_spec.write_text("# Feature Specification: rien\n\nDu texte sans exigence.\n")
+r = subprocess.run([sys.executable, str(PONT), str(vide_spec), str(tmp / "x.json")],
+                   capture_output=True, text=True)
+if r.returncode != 2:
+    echec("pont: refus du vide", f"code {r.returncode}")
+ok("pont: spec sans exigence → code 2")
+
+ctx_complet = dict(amorce)
+ctx_complet["functional_modules"] = [{
+    "module_name": "Suivi et paris",
+    "submodules": [{"submodule_name": "Suivi", "features": [
+        {"feature_name": "Scores et classements (FR-001)"},
+        {"feature_name": "Prise de paris (FR-002, FR-003)"},
+        {"feature_name": "Portefeuille Mobile Money (FR-004, FR-005)"},
+        {"feature_name": "Back-office (FR-006)"}]}]}]
+f_complet = tmp / "cdc-complet.json"
+f_complet.write_text(json.dumps(ctx_complet))
+r = subprocess.run([sys.executable, str(PONT), str(SPEC), "--verifier", str(f_complet)],
+                   capture_output=True, text=True)
+if r.returncode != 0:
+    echec("pont: fermeture", f"code {r.returncode} sur un CDC complet\n{r.stdout}")
+ok("pont: fermeture vérifiée — chaque FR de la spec est dans le CDC")
+
+ctx_troue = json.loads(f_complet.read_text())
+ctx_troue["functional_modules"][0]["submodules"][0]["features"][2]["feature_name"] = \
+    "Portefeuille Mobile Money (FR-005)"   # FR-004 disparaît
+f_troue = tmp / "cdc-troue.json"
+f_troue.write_text(json.dumps(ctx_troue))
+r = subprocess.run([sys.executable, str(PONT), str(SPEC), "--verifier", str(f_troue)],
+                   capture_output=True, text=True)
+if r.returncode != 1 or "FR-004" not in r.stdout:
+    echec("pont: delta", f"code {r.returncode}, FR-004 non nommée\n{r.stdout}")
+ok("pont: exigence absente du CDC → code 1, FR nommée (delta)")
+
+ctx_invente = json.loads(f_complet.read_text())
+ctx_invente["functional_modules"][0]["submodules"][0]["features"][0]["feature_name"] += " (FR-099)"
+f_invente = tmp / "cdc-invente.json"
+f_invente.write_text(json.dumps(ctx_invente))
+r = subprocess.run([sys.executable, str(PONT), str(SPEC), "--verifier", str(f_invente)],
+                   capture_output=True, text=True)
+if r.returncode != 2 or "FR-099" not in r.stdout:
+    echec("pont: invention", f"code {r.returncode}, FR-099 non nommée\n{r.stdout}")
+ok("pont: FR citée mais absente de la spec → code 2 (invention)")
+
 # ── 14. Le rendu se convertit en PDF (LibreOffice) ─────────────────────────
 r = subprocess.run(["libreoffice", "--headless", "--convert-to", "pdf",
                     "--outdir", str(tmp), str(rendu)],

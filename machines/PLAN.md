@@ -391,10 +391,29 @@ Le mode sombre est un volet de la palette, pas un second système.
       installé dans shoguna — `dm gate` a ses deux lames. Noms revérifiés,
       crainte D13 levée sur ce point.
 - [x] **D7** — `--no-sandbox` retiré ; `DM_NO_SANDBOX=1` réservé aux conteneurs
-- [ ] **spec-kit** : périmètre arrêté — cahier de conception et spécification
+- [x] **spec-kit** : périmètre arrêté — cahier de conception et spécification
       uniquement (là où il a fait ses preuves, tranche B). Pas sur PTF, devis,
       guide, rapport : forme logicielle inadaptée. Il s'installe par projet, donc
-      ne coûte rien là où on ne l'initie pas.
+      ne coûte rien là où on ne l'initie pas. **Câblé le 2026-07-30** :
+      `spec_vers_contexte.py` extrait la population des `FR-xxx` d'une spec
+      spec-kit (ligne source par exigence) vers le contexte du gabarit CDC,
+      puis `--verifier` ferme la population — FR absente du CDC = delta code 1,
+      FR inventée = code 2. Porte : 5 vérifications. Séquence au skill.
+
+### Les skills de la chaîne rédaction — à utiliser, chacun à sa place
+
+| Étape | Skill / outil | Statut |
+|---|---|---|
+| Spec logicielle (amont CDC) | **spec-kit** (`/speckit-specify`, `/speckit-plan`), par projet | câblé (pont ci-dessus) |
+| Cadrage / exigences en session | **superpowers** (brainstorming, writing-plans) | opérationnel |
+| Dépouiller un AO / cahier des charges reçu | **file-analysis** (posture + extraction du réel) | opérationnel |
+| Produire le document client | **machine-redaction** (six gestes) | opérationnel |
+| Guides et doc produit vérifiée | **odoo-doc-pdf** (extraction → build → vérif du rendu) | opérationnel, à généraliser hors Odoo |
+| Maquettes/UI citées dans un CDC | **design-machine** (`dm`, tokens) | opérationnel |
+
+Les chaînes du zip non couvertes restent : guides génériques et rapports
+(diataxis/doc-coauthoring non installés) — la voie recommandée est le modèle
+odoo-doc-pdf (instrument-d'abord), pas la réinstallation des skills prose.
 - [ ] **R11** — corriger `/specify` → `/speckit-specify` dans `livrable-client`
 
 ---

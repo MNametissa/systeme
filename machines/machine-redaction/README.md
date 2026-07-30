@@ -100,3 +100,11 @@ Requis : `docxtpl`, `python-docx`, `jinja2`, `docxcompose` (pip),
 sa commande d'installation. Signalés sans bloquer : `pandoc`, porte absente,
 skills de l'ancien paquet posés au mauvais profil (`~/.claude/skills`).
 À lancer avant le premier geste sur une machine neuve.
+
+## Pont spec-kit → CDC
+
+Une spec logicielle spec-kit (`FR-xxx`) devient la base de faits du gabarit
+CDC : `instruments/spec_vers_contexte.py spec.md contexte.json` extrait la
+population des exigences (id, texte, ligne source) ; le modèle les organise
+en modules en citant chaque id ; `--verifier` ferme la population — exigence
+absente du CDC = code 1, exigence inventée = code 2.

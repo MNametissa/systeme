@@ -45,6 +45,21 @@ demander **quels AF ne sont pas déductibles du document**. La réponse est une
 liste d'IDs, pas un avis. Un AF non déductible = le document ne le porte pas :
 corriger le document ou la base de faits.
 
+## Spec logicielle → CDC (pont spec-kit)
+
+L'amont d'un cahier de conception est une spec **spec-kit** dans le dépôt du
+projet (`/speckit-specify`, `/speckit-plan` — jamais sur PTF/devis/guides).
+Puis :
+
+1. `python3 instruments/spec_vers_contexte.py spec.md contexte.json` —
+   extrait la population des `FR-xxx` (avec ligne source) et amorce le
+   contexte du gabarit `modele-cdc.docx`.
+2. Organiser les FR en `functional_modules` en **citant chaque id**
+   (« Prise de paris (FR-002) »), compléter les autres variables.
+3. `… spec_vers_contexte.py spec.md --verifier contexte.json` — fermeture :
+   FR absente du CDC = delta (code 1), FR inventée = code 2. Le CDC ne part
+   pas tant que la fermeture n'est pas nulle.
+
 ## Créer ou améliorer un gabarit
 
 Document nu ou modèle à re-baliser : écrire la carte (`cartes/*.json`,
