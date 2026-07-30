@@ -88,10 +88,12 @@ si la dérive est voulue, on régénère le MASTER — on ne contourne jamais la
 
 ## Transporter un design
 
-`dm pack` exporte le design entier (contrat + sources + North Star) en un
-fichier ; `dm unpack <fichier>` l'importe ailleurs et régénère les dérivés.
-Réutiliser un design existant = demander son `.design.json`, jamais recopier
-des valeurs à la main.
+`dm pack` exporte le design entier (contrat + sources + North Star + grammaire)
+en un fichier ; `dm unpack <fichier>` l'importe ailleurs et régénère les
+dérivés. Destinataire SANS la machine (autre agent, autre outil) →
+`dm handoff` : un seul Markdown autonome, tokens.css embarqué, règles d'usage
+incluses. Réutiliser un design existant = demander son `.design.json` (ou son
+handoff), jamais recopier des valeurs à la main.
 
 ## Stacks non-web
 

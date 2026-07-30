@@ -63,6 +63,11 @@ design-machine — extraire, composer, verifier
       Exporte le design en UN fichier portable : contrat (provenance comprise),
       sources mesurees, North Star — l'inderivable seulement, somme de controle.
 
+  dm handoff [--out design-handoff.md]
+      Livrable AUTONOME pour un agent SANS la machine : un seul Markdown —
+      contrat lisible, tokens.css embarque, grammaire, intention, regles
+      d'usage. Instantane date et signe ; la verite reste tokens.json ici.
+
   dm unpack <fichier> [--force]
       Importe un design : verifie la somme de controle, ecrit sources/ et
       tokens.json, REGENERE les derives (MASTER.md, tokens.css, DESIGN.md).
@@ -295,6 +300,26 @@ async function main() {
     const out = flag('out', 'design.pack.json');
     write(out, JSON.stringify(pack, null, 2));
     console.error(`  ${sources.length} source(s) · North Star ${northStar ? 'inclus' : 'ABSENT'} · grammaire ${notes ? 'incluse' : 'ABSENTE (design-system/NOTES.md)'} · sha256 ${pack.checksum.slice(0, 12)}…`);
+    return 0;
+  }
+
+  if (cmd === 'handoff') {
+    const masterPath = flag('master', 'design-system/tokens.json');
+    if (!existsSync(masterPath)) {
+      console.error(`  ${masterPath} absent — rien a transmettre.`);
+      return 2;
+    }
+    const tokens = JSON.parse(readFileSync(masterPath, 'utf8'));
+    let northStar = null;
+    try { northStar = JSON.parse(readFileSync('.impeccable/design.json', 'utf8')).northStar ?? null; }
+    catch { /* pas d'intention deposee */ }
+    let notes = null;
+    try { notes = readFileSync('design-system/NOTES.md', 'utf8'); }
+    catch { /* pas de grammaire */ }
+    const { renderHandoff } = await import('../src/handoff.mjs');
+    write(flag('out', 'design-handoff.md'), renderHandoff({ tokens, northStar, notes }));
+    if (!northStar) console.error('  ! intention absente : le destinataire devra la demander');
+    if (!notes) console.error('  ! grammaire absente (design-system/NOTES.md) : contrat sans regles de composition');
     return 0;
   }
 

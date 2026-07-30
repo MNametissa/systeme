@@ -709,6 +709,7 @@ test('invertPalette preserve les suffixes alpha', () => {
 // --- import / export ---
 
 const { buildPack, applyPack } = await import('../src/pack.mjs');
+const handoffMod = await import('../src/handoff.mjs');
 
 test('pack -> unpack restitue le contrat a l identique et regenere les derives', () => {
   const src = normalize(siteB, 'B');
@@ -748,6 +749,27 @@ test('la grammaire (NOTES.md) voyage dans le pack et ressort telle quelle', () =
   const ancien = buildPack({ tokens: tokensB, sources: [], northStar: null });
   delete ancien.notes;
   assert.doesNotThrow(() => applyPack(ancien));
+});
+
+
+test('handoff : un seul Markdown autonome, complet et date', () => {
+  const { renderHandoff } = handoffMod;
+  const md = renderHandoff({ tokens: tokensMixte, northStar: 'Le comptoir clair', notes: '## Grammaire\n- blocs decales' });
+  assert.ok(md.includes('INSTANTANE derive'), 'l instantane se date et s avoue');
+  assert.ok(md.includes('empreinte du contrat'), 'la divergence est detectable');
+  assert.ok(md.includes('Le comptoir clair'));
+  assert.ok(md.includes('SEUL vocabulaire autorise'));
+  assert.ok(md.includes('## Provenance'), 'le MASTER lisible est embarque');
+  assert.ok(md.includes('blocs decales'), 'la grammaire est embarquee');
+  assert.ok(md.includes('```css') && md.includes(':root'), 'tokens.css embarque');
+  assert.ok(md.includes('prefers-color-scheme'), 'volet sombre compris');
+});
+
+test('handoff sans intention ni grammaire le DIT au destinataire', () => {
+  const { renderHandoff } = handoffMod;
+  const md = renderHandoff({ tokens: tokensB });
+  assert.ok(md.includes('Non fournie'));
+  assert.ok(!md.includes('## Grammaire'));
 });
 
 

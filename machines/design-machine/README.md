@@ -44,7 +44,7 @@ Sur Linux Mint : `sudo apt install chromium` si besoin. Sinon `CHROME_PATH=/chem
 Verifier que tout tourne :
 
 ```bash
-npm test            # 71 tests sur les parties deterministes, sans navigateur
+npm test            # 73 tests sur les parties deterministes, sans navigateur
 npm run test:e2e    # 10 passes reelles Chromium sur fixtures locales, zero reseau
 dm doctor           # preconditions nommees : Node, Chromium, profil, options
 ```
@@ -279,6 +279,12 @@ A ne pas confondre avec `dm export dart|ts` : export = projections de
 CONSOMMATION du contrat courant ; pack/unpack = TRANSPORT du design entier
 entre projets ou machines.
 
+**Le destinataire n'a pas la machine ?** `dm handoff` produit un SEUL Markdown
+autonome — contrat lisible, tokens.css embarque, grammaire, intention, regles
+d'usage pour l'agent qui le recoit. Instantane date et signe (empreinte du
+contrat) : la verite reste tokens.json chez l'emetteur, la divergence est
+detectable. pack = pour une machine ; handoff = pour un agent nu.
+
 ## Stacks non-web : Flutter, React Native, Electron, Ionic
 
 Le contrat est `tokens.json` — `tokens.css` n'en est qu'une projection. Deux
@@ -367,7 +373,7 @@ STACK.md                la chaine complete : quoi installer, dans quel ordre
 install-stack.sh        installeur, simulation par defaut
 hooks/                  porte Claude Code
 templates/              bloc CLAUDE.md
-test/run.mjs            71 tests, sans navigateur ni Impeccable
+test/run.mjs            73 tests, sans navigateur ni Impeccable
 ```
 
 MIT.
